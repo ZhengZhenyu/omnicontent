@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import init_db
-from app.api import contents, upload
+from app.api import contents, upload, publish, analytics
 
 
 @asynccontextmanager
@@ -36,6 +36,8 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 # Register API routers
 app.include_router(contents.router, prefix="/api/contents", tags=["Contents"])
 app.include_router(upload.router, prefix="/api/contents", tags=["Upload"])
+app.include_router(publish.router, prefix="/api/publish", tags=["Publish"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 
 
 @app.get("/api/health")
