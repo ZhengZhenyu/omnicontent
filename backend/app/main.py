@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import init_db
+from app.api import contents, upload
 
 
 @asynccontextmanager
@@ -30,6 +31,11 @@ app.add_middleware(
 
 # Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+
+
+# Register API routers
+app.include_router(contents.router, prefix="/api/contents", tags=["Contents"])
+app.include_router(upload.router, prefix="/api/contents", tags=["Upload"])
 
 
 @app.get("/api/health")
