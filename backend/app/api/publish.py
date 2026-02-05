@@ -12,6 +12,7 @@ from app.schemas.publish import (
     ChannelPreview,
     CopyContent,
 )
+from app.config import settings
 from app.services.wechat import wechat_service
 from app.services.hugo import hugo_service
 from app.services.csdn import csdn_service
@@ -35,6 +36,11 @@ async def publish_to_wechat(
     data: PublishRequest | None = None,
     db: Session = Depends(get_db),
 ):
+    if not settings.WECHAT_APP_ID or settings.WECHAT_APP_ID == "your_app_id":
+        raise HTTPException(
+            400,
+            "微信公众号未配置。请在 backend/.env 中设置 WECHAT_APP_ID 和 WECHAT_APP_SECRET",
+        )
     content = _get_content_or_404(content_id, db)
     wechat_html = wechat_service.convert_to_wechat_html(content.content_markdown)
 
@@ -73,6 +79,11 @@ async def publish_to_wechat(
 
 @router.post("/{content_id}/hugo", response_model=PublishRecordOut, status_code=201)
 def publish_to_hugo(content_id: int, db: Session = Depends(get_db)):
+    if not settings.HUGO_REPO_PATH or settings.HUGO_REPO_PATH == "/path/to/your/hugo/repo":
+        raise HTTPException(
+            400,
+            "Hugo 博客未配置。请在 backend/.env 中设置 HUGO_REPO_PATH",
+        )
     content = _get_content_or_404(content_id, db)
 
     try:
