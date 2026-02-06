@@ -1,7 +1,8 @@
 {
-  "name": "community-content-hub",
+  "name": "omnicontent",
   "private": true,
   "version": "0.1.0",
+  "description": "OmniContent - Enterprise multi-tenant content management platform",
   "type": "module",
   "scripts": {
     "dev": "vite",

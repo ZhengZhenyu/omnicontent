@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "Community Content Hub"
+    APP_NAME: str = "OmniContent"
     DEBUG: bool = True
 
     # Database
