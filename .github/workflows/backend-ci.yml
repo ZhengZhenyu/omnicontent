@@ -62,8 +62,8 @@ jobs:
         # Remove old database if exists
         rm -f "${DB_PATH}"
 
-        # Initialize old schema (pre-Phase1) to simulate upgrading from existing system
-        python init_old_schema.py "${DATABASE_URL}"
+        # Run migration - it handles both fresh install and upgrade scenarios
+        alembic upgrade head
 
         # Verify database file exists
         if [ ! -f "${DB_PATH}" ]; then
@@ -75,11 +75,8 @@ jobs:
         ls -lh "${DB_PATH}"
 
         # List tables in database
-        echo "Tables before migration:"
+        echo "Tables after migration:"
         sqlite3 "${DB_PATH}" ".tables"
-
-        # Run migration to upgrade to Phase 1
-        alembic upgrade head
 
         echo "✅ Migration completed"
 
