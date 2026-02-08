@@ -7,6 +7,9 @@ build/
 .venv/
 venv/
 *.db
+*.db-journal
+*.sqlite
+*.sqlite3
 
 # Node
 node_modules/
@@ -15,6 +18,8 @@ frontend/dist/
 # Uploads
 uploads/*
 !uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # IDE
 .idea/
