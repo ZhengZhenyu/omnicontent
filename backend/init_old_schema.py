@@ -85,10 +85,26 @@ def init_old_schema(database_url: str = "sqlite:///./content_hub.db"):
     # Create all tables
     Base.metadata.create_all(bind=engine)
 
+    # Ensure changes are committed by disposing the engine
+    engine.dispose()
+
     print("✅ Old schema created successfully")
     print("Tables created:")
     for table in Base.metadata.sorted_tables:
         print(f"  - {table.name}")
+
+    # Verify tables were actually created
+    verify_engine = create_engine(database_url, connect_args={"check_same_thread": False})
+    from sqlalchemy import inspect
+    inspector = inspect(verify_engine)
+    actual_tables = inspector.get_table_names()
+    verify_engine.dispose()
+
+    if actual_tables:
+        print(f"✅ Verified {len(actual_tables)} tables exist in database")
+    else:
+        print("❌ Warning: No tables found after creation!")
+        raise RuntimeError("Failed to create database tables")
 
 
 if __name__ == "__main__":
