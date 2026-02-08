@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
-Test script for Phase 1: Basic Authentication and Community Isolation
+Integration tests for authentication and multi-tenancy features.
+
+Tests:
+- Database migration (default community and admin user)
+- Password hashing and verification
+- JWT token creation and validation
+- Community-level data isolation
 """
 
 import sys
@@ -105,9 +111,9 @@ def test_community_isolation():
 
 
 def main():
-    """Run all tests."""
+    """Run all integration tests."""
     print("=" * 60)
-    print("Phase 1 Verification Tests")
+    print("Authentication & Multi-Tenancy Integration Tests")
     print("=" * 60)
 
     try:
@@ -119,7 +125,7 @@ def main():
         print("\n" + "=" * 60)
         print("✅ All tests passed!")
         print("=" * 60)
-        print("\nPhase 1 implementation is complete and working correctly.")
+        print("\nAuthentication and multi-tenancy features are working correctly.")
         print("\nDefault credentials:")
         print("  Username: admin")
         print("  Password: admin123")

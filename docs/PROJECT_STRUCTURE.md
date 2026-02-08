@@ -56,7 +56,8 @@ backend/
 │   ├── database.py       # 数据库连接
 │   └── main.py           # FastAPI 应用入口
 ├── tests/                # 测试文件
-│   └── test_phase1.py    # Phase 1 测试
+│   ├── __init__.py       # 测试包初始化
+│   └── test_auth_integration.py  # 认证和多租户集成测试
 ├── uploads/              # 文件上传目录
 │   └── .gitkeep
 ├── .env.example          # 环境变量示例
