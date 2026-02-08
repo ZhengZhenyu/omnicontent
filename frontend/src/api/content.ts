@@ -1,6 +1,6 @@
-import axios from 'axios'
+import apiClient from './index'
 
-const api = axios.create({ baseURL: '/api' })
+const api = apiClient
 
 export interface Content {
   id: number
