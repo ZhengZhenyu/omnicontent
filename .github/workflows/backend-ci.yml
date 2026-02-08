@@ -55,13 +55,33 @@ jobs:
     - name: Run database migration
       working-directory: ./backend
       run: |
+        # Set absolute path for database to ensure consistency
+        DB_PATH="$(pwd)/test_content_hub.db"
+        export DATABASE_URL="sqlite:///${DB_PATH}"
+
+        # Remove old database if exists
+        rm -f "${DB_PATH}"
+
         # Initialize old schema (pre-Phase1) to simulate upgrading from existing system
-        python init_old_schema.py test_content_hub.db
+        python init_old_schema.py "${DATABASE_URL}"
+
+        # Verify database file exists
+        if [ ! -f "${DB_PATH}" ]; then
+          echo "❌ Error: Database file not created at ${DB_PATH}"
+          exit 1
+        fi
+
+        # Show database size
+        ls -lh "${DB_PATH}"
+
+        # List tables in database
+        echo "Tables before migration:"
+        sqlite3 "${DB_PATH}" ".tables"
 
         # Run migration to upgrade to Phase 1
         alembic upgrade head
-      env:
-        DATABASE_URL: sqlite:///./test_content_hub.db
+
+        echo "✅ Migration completed"
 
     - name: Run tests
       working-directory: ./backend

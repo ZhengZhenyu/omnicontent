@@ -27,12 +27,25 @@ jobs:
     - name: Check migration can run
       working-directory: ./backend
       run: |
-        # Test migration on database with old schema
-        rm -f test_migration.db
-        export DATABASE_URL=sqlite:///./test_migration.db
+        # Set absolute path for database to ensure consistency
+        DB_PATH="$(pwd)/test_migration.db"
+        export DATABASE_URL="sqlite:///${DB_PATH}"
+
+        # Remove old database if exists
+        rm -f "${DB_PATH}"
 
         # Initialize old schema (pre-Phase1) to simulate upgrading from existing system
-        python init_old_schema.py test_migration.db
+        python init_old_schema.py "${DATABASE_URL}"
+
+        # Verify database file exists
+        if [ ! -f "${DB_PATH}" ]; then
+          echo "❌ Error: Database file not created"
+          exit 1
+        fi
+
+        # List tables before migration
+        echo "Tables before migration:"
+        sqlite3 "${DB_PATH}" ".tables"
 
         # Run migration
         alembic upgrade head
@@ -42,7 +55,9 @@ jobs:
     - name: Verify migration is reversible
       working-directory: ./backend
       run: |
-        export DATABASE_URL=sqlite:///./test_migration.db
+        # Use same database path
+        DB_PATH="$(pwd)/test_migration.db"
+        export DATABASE_URL="sqlite:///${DB_PATH}"
 
         # Test downgrade
         alembic downgrade -1
