@@ -81,11 +81,34 @@ const router = createRouter({
 })
 
 // Navigation guard for authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const communityStore = useCommunityStore()
   const requiresAuth = to.meta.requiresAuth !== false
   const requiresSuperuser = to.meta.requiresSuperuser === true
+
+  // If authenticated but user info not loaded, fetch it first
+  if (authStore.isAuthenticated && !authStore.user) {
+    try {
+      const { getUserInfo } = await import('../api/auth')
+      const userInfo = await getUserInfo()
+      authStore.setUser(userInfo.user)
+      authStore.setCommunities(userInfo.communities)
+      
+      // Set default community if available and not already set
+      if (userInfo.communities.length > 0 && !communityStore.currentCommunityId) {
+        communityStore.setCommunity(userInfo.communities[0].id)
+      }
+    } catch (error) {
+      // If failed to get user info, clear auth and redirect to login
+      console.error('Failed to load user info:', error)
+      authStore.clearAuth()
+      if (requiresAuth) {
+        next({ name: 'Login', query: { redirect: to.fullPath } })
+        return
+      }
+    }
+  }
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // Redirect to login if not authenticated

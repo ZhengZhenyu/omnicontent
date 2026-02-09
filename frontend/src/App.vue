@@ -1,5 +1,11 @@
 <template>
-  <el-container class="app-container">
+  <!-- 未登录页面（登录、忘记密码、重置密码、初始设置）：无侧边栏和顶栏 -->
+  <div v-if="!showLayout" class="fullscreen-container">
+    <router-view />
+  </div>
+
+  <!-- 已登录页面：带侧边栏和顶栏 -->
+  <el-container v-else class="app-container">
     <el-aside width="220px" class="app-aside">
       <div class="logo">
         <el-icon :size="24"><Collection /></el-icon>
@@ -78,12 +84,19 @@ const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 const isSuperuser = computed(() => authStore.isSuperuser)
 
+// 判断是否显示侧边栏和顶栏布局
+// 登录页、初始设置页、忘记密码页、重置密码页不显示
+const showLayout = computed(() => {
+  const noLayoutRoutes = ['Login', 'InitialSetup', 'ForgotPassword', 'ResetPassword']
+  return !noLayoutRoutes.includes(route.name as string)
+})
+
 onMounted(async () => {
   if (authStore.isAuthenticated && !authStore.user) {
     try {
-      const info = await getUserInfo()
-      authStore.setUser(info.user)
-      authStore.setCommunities(info.communities)
+      const userInfo = await getUserInfo()
+      authStore.setUser(userInfo.user)
+      authStore.setCommunities(userInfo.communities)
     } catch {
       // If failed to get user info, clear auth
     }
@@ -102,6 +115,12 @@ function handleCommand(command: string) {
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.fullscreen-container {
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
 }
 
 .app-container {

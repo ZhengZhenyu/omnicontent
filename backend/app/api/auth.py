@@ -14,7 +14,7 @@ from app.models.community import Community
 from app.models.user import community_users
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
-    LoginRequest, Token, UserCreate, UserOut, UserWithCommunities,
+    LoginRequest, Token, UserCreate, UserOut, UserInfoResponse,
     InitialSetupRequest, PasswordResetRequest,
     PasswordResetConfirm, SystemStatusResponse,
 )
@@ -161,12 +161,17 @@ def initial_setup(
     }
 
 
-@router.post("/register", response_model=UserWithCommunities, status_code=status.HTTP_201_CREATED)
-def register(user_create: UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def register(
+    user_create: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_superuser),
+):
     """
-    User registration endpoint.
+    User registration endpoint. Only superusers can create new users.
+    Superusers can optionally create other superusers.
 
-    Note: In production, you may want to restrict this endpoint or require admin approval.
+    Note: In production, you may want to require admin approval.
     """
     # Check if username already exists
     existing_user = db.query(User).filter(User.username == user_create.username).first()
@@ -184,6 +189,10 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered",
         )
 
+    # Only superusers can create superuser accounts
+    # Regular users will always have is_superuser=False
+    is_superuser = user_create.is_superuser if current_user.is_superuser else False
+
     # Create new user
     hashed_password = get_password_hash(user_create.password)
     new_user = User(
@@ -192,7 +201,7 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
         full_name=user_create.full_name,
         hashed_password=hashed_password,
         is_active=True,
-        is_superuser=False,
+        is_superuser=is_superuser,
     )
 
     db.add(new_user)
@@ -202,12 +211,15 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.get("/me", response_model=UserWithCommunities)
+@router.get("/me", response_model=UserInfoResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     """
     Get current user information and their accessible communities.
     """
-    return current_user
+    return UserInfoResponse(
+        user=current_user,
+        communities=current_user.communities
+    )
 
 
 @router.get("/users", response_model=list[UserOut])
