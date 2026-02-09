@@ -89,6 +89,24 @@ const router = createRouter({
       component: () => import('../views/CommitteeDetail.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/governance',
+      name: 'GovernanceOverview',
+      component: () => import('../views/GovernanceOverview.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/meetings',
+      name: 'MeetingCalendar',
+      component: () => import('../views/MeetingCalendar.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/meetings/:id',
+      name: 'MeetingDetail',
+      component: () => import('../views/MeetingDetail.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
