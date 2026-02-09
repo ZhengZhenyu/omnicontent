@@ -1,0 +1,186 @@
+name: 🏛️ Governance Module Task
+description: Task for implementing governance module features
+title: "[Governance]: "
+labels: ["governance", "enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for tracking tasks related to the Governance Module (committees, members, meetings).
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which governance component does this task relate to?
+      options:
+        - Committee Management
+        - Committee Member Management
+        - Meeting Management
+        - Meeting Reminders & Notifications
+        - Calendar Integration
+        - Member Import/Export
+        - Role & Permission Management
+        - Governance Analytics
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      description: What type of task is this?
+      options:
+        - Backend API Implementation
+        - Frontend UI Implementation
+        - Database Model/Migration
+        - Service Integration (Email/WeChat)
+        - Testing
+        - Documentation
+        - Bug Fix
+        - Performance Optimization
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Task priority
+      options:
+        - P0 - Critical (MVP blocking)
+        - P1 - High (Core feature)
+        - P2 - Medium (Enhancement)
+        - P3 - Low (Nice to have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: Detailed description of what needs to be done
+      placeholder: |
+        Clearly describe the task:
+        - What needs to be implemented?
+        - Why is this needed?
+        - What is the expected outcome?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be true for this task to be considered complete?
+      placeholder: |
+        - [ ] Backend API endpoint implemented: POST /api/committees
+        - [ ] Database migration created and tested
+        - [ ] Frontend form component created
+        - [ ] Unit tests added (coverage ≥ 80%)
+        - [ ] API documentation updated
+        - [ ] Manual testing completed
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details
+      description: Technical implementation details
+      placeholder: |
+        **Database Changes:**
+        - Table: committees
+        - New fields: ...
+
+        **API Design:**
+        - Endpoint: POST /api/committees
+        - Request body: ...
+        - Response: ...
+
+        **Dependencies:**
+        - Depends on #123
+        - Blocks #456
+
+  - type: textarea
+    id: design-reference
+    attributes:
+      label: Design Reference
+      description: Link to design documents or specifications
+      placeholder: |
+        - Design doc: docs/design/03-理事会治理模块设计.md
+        - API spec: docs/api/governance-api.md
+        - Mockup: [link to Figma/image]
+
+  - type: dropdown
+    id: assignee-role
+    attributes:
+      label: Suggested Assignee Role
+      description: Which team role should handle this task?
+      options:
+        - Role 3 - Governance Domain Expert
+        - Role 4 - Infrastructure (if database/notification related)
+        - Role 1 - Security (if auth/permission related)
+        - Multiple roles (cross-cutting)
+    validations:
+      required: false
+
+  - type: textarea
+    id: test-plan
+    attributes:
+      label: Test Plan
+      description: How should this be tested?
+      placeholder: |
+        **Unit Tests:**
+        - Test committee creation with valid data
+        - Test validation errors
+        - Test authorization
+
+        **Integration Tests:**
+        - Test full committee lifecycle
+        - Test member assignment
+
+        **Manual Testing:**
+        1. Log in as admin
+        2. Navigate to Committees page
+        3. Create a new committee
+        4. Verify data saved correctly
+
+  - type: textarea
+    id: related-tasks
+    attributes:
+      label: Related Tasks
+      description: Links to related issues or PRs
+      placeholder: |
+        - Depends on: #123
+        - Blocks: #456
+        - Related to: #789
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Implementation Checklist
+      description: Track progress of implementation
+      options:
+        - label: Database model created
+        - label: Migration script created
+        - label: Backend API implemented
+        - label: API tests written
+        - label: Frontend UI implemented
+        - label: Frontend tests written
+        - label: Documentation updated
+        - label: Code reviewed
+        - label: Manually tested
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any other relevant information
+      placeholder: |
+        - Edge cases to consider
+        - Known limitations
+        - Future enhancements

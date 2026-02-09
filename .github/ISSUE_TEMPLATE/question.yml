@@ -1,0 +1,111 @@
+name: ❓ Question / Support
+description: Ask a question about usage or implementation
+title: "[Question]: "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        👋 Have a question? We're here to help!
+
+        **Note**: For general discussions, please use [GitHub Discussions](https://github.com/ZhengZhenyu/omnicontent/discussions).
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Installation & Setup
+        - Configuration
+        - Authentication & Authorization
+        - Content Management
+        - Publishing & Integrations
+        - Governance Module
+        - Database & Migrations
+        - API Usage
+        - Frontend Development
+        - Deployment
+        - Performance & Optimization
+        - Security
+        - Testing
+        - Best Practices
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: |
+        Please be as specific as possible:
+        - What are you trying to achieve?
+        - What have you tried so far?
+        - What specific aspect are you confused about?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide context about your situation
+      placeholder: |
+        - What are you building?
+        - What is your use case?
+        - Any constraints or requirements?
+      render: markdown
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What Have You Tried?
+      description: What solutions have you already attempted?
+      placeholder: |
+        - Approaches you've tried
+        - Documentation you've read
+        - Similar issues or discussions you've found
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment (if relevant)
+      description: Your environment details
+      value: |
+        - OS: [e.g., macOS, Ubuntu, Windows]
+        - Python Version: [e.g., 3.11.5]
+        - Node.js Version: [e.g., 18.17.0]
+        - Database: [e.g., PostgreSQL 15, SQLite]
+        - Deployment: [e.g., Docker, Local, Production]
+      render: markdown
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Relevant Code / Configuration
+      description: If applicable, provide relevant code or configuration
+      placeholder: |
+        ```python
+        # Your code here
+        ```
+
+        or
+
+        ```yaml
+        # Your configuration here
+        ```
+      render: markdown
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Anything else that might be helpful
+      placeholder: |
+        - Screenshots
+        - Links to related resources
+        - Any other relevant information
