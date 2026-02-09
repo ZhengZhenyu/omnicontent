@@ -1,0 +1,547 @@
+"""
+Tests for content management API endpoints.
+
+Endpoints tested:
+- GET /api/contents
+- POST /api/contents
+- GET /api/contents/{content_id}
+- PUT /api/contents/{content_id}
+- DELETE /api/contents/{content_id}
+- PATCH /api/contents/{content_id}/status
+"""
+
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+
+from app.models.user import User
+from app.models.community import Community
+from app.models.content import Content
+
+
+class TestListContents:
+    """Tests for GET /api/contents"""
+
+    def test_list_contents_success(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test listing contents in a community."""
+        # Create test contents
+        for i in range(3):
+            content = Content(
+                title=f"Test Content {i}",
+                content_markdown=f"# Content {i}",
+                content_html=f"<h1>Content {i}</h1>",
+                author="Test Author",
+                community_id=test_community.id,
+                source_type="contribution",
+            )
+            db_session.add(content)
+        db_session.commit()
+
+        response = client.get("/api/contents", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
+
+    def test_list_contents_pagination(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test contents list pagination."""
+        # Create 10 contents
+        for i in range(10):
+            content = Content(
+                title=f"Content {i}",
+                content_markdown="Test",
+                content_html="<p>Test</p>",
+                author="Author",
+                community_id=test_community.id,
+                source_type="contribution",
+            )
+            db_session.add(content)
+        db_session.commit()
+
+        # Test page 1
+        response = client.get("/api/contents?page=1&page_size=5", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 5
+        assert data["page"] == 1
+        assert data["total"] == 10
+
+        # Test page 2
+        response = client.get("/api/contents?page=2&page_size=5", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 5
+        assert data["page"] == 2
+
+    def test_list_contents_filter_by_status(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test filtering contents by status."""
+        # Create contents with different statuses
+        for status in ["draft", "reviewing", "approved", "published"]:
+            content = Content(
+                title=f"{status.capitalize()} Content",
+                content_markdown="Test",
+                content_html="<p>Test</p>",
+                author="Author",
+                status=status,
+                community_id=test_community.id,
+                source_type="contribution",
+            )
+            db_session.add(content)
+        db_session.commit()
+
+        # Filter by draft
+        response = client.get("/api/contents?status=draft", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        assert data["items"][0]["status"] == "draft"
+
+    def test_list_contents_filter_by_source_type(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test filtering contents by source_type."""
+        # Create contents with different source types
+        for source_type in ["contribution", "release_note", "event_summary"]:
+            content = Content(
+                title=f"{source_type} Content",
+                content_markdown="Test",
+                content_html="<p>Test</p>",
+                author="Author",
+                community_id=test_community.id,
+                source_type=source_type,
+            )
+            db_session.add(content)
+        db_session.commit()
+
+        # Filter by release_note
+        response = client.get(
+            "/api/contents?source_type=release_note", headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        assert data["items"][0]["source_type"] == "release_note"
+
+    def test_list_contents_keyword_search(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test searching contents by keyword."""
+        # Create contents with different titles
+        content1 = Content(
+            title="Python Tutorial",
+            content_markdown="Learn Python",
+            content_html="<p>Learn Python</p>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        content2 = Content(
+            title="JavaScript Guide",
+            content_markdown="Learn JS",
+            content_html="<p>Learn JS</p>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add_all([content1, content2])
+        db_session.commit()
+
+        # Search for Python
+        response = client.get("/api/contents?keyword=Python", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        assert "Python" in data["items"][0]["title"]
+
+    def test_list_contents_community_isolation(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        test_another_community: Community,
+        auth_headers: dict,
+    ):
+        """Test contents are isolated by community."""
+        # Create content in test_community
+        content1 = Content(
+            title="My Content",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        # Create content in another_community
+        content2 = Content(
+            title="Other Content",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            community_id=test_another_community.id,
+            source_type="contribution",
+        )
+        db_session.add_all([content1, content2])
+        db_session.commit()
+
+        # Should only see content from test_community
+        response = client.get("/api/contents", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        assert data["items"][0]["title"] == "My Content"
+
+    def test_list_contents_no_auth(self, client: TestClient):
+        """Test listing contents fails without authentication."""
+        response = client.get("/api/contents")
+        assert response.status_code == 401
+
+
+class TestCreateContent:
+    """Tests for POST /api/contents"""
+
+    def test_create_content_success(
+        self, client: TestClient, auth_headers: dict
+    ):
+        """Test creating a new content."""
+        response = client.post(
+            "/api/contents",
+            headers=auth_headers,
+            json={
+                "title": "New Content",
+                "content_markdown": "# Hello World\n\nThis is **markdown**.",
+                "author": "Test Author",
+                "tags": ["python", "tutorial"],
+                "category": "programming",
+                "source_type": "contribution",
+            },
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["title"] == "New Content"
+        assert data["author"] == "Test Author"
+        assert data["status"] == "draft"  # Default status
+        assert data["source_type"] == "contribution"
+        assert "<h1>Hello World</h1>" in data["content_html"]  # Markdown converted
+        assert "tags" in data
+        assert "category" in data
+
+    def test_create_content_with_cover_image(
+        self, client: TestClient, auth_headers: dict
+    ):
+        """Test creating content with cover image."""
+        response = client.post(
+            "/api/contents",
+            headers=auth_headers,
+            json={
+                "title": "Content with Image",
+                "content_markdown": "Test content",
+                "author": "Author",
+                "source_type": "contribution",
+                "cover_image": "/uploads/test.jpg",
+            },
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["cover_image"] == "/uploads/test.jpg"
+
+    def test_create_content_invalid_source_type(
+        self, client: TestClient, auth_headers: dict
+    ):
+        """Test creating content with invalid source_type fails."""
+        response = client.post(
+            "/api/contents",
+            headers=auth_headers,
+            json={
+                "title": "Invalid Source",
+                "content_markdown": "Test",
+                "author": "Author",
+                "source_type": "invalid_type",  # Not in enum
+            },
+        )
+        assert response.status_code == 422  # Validation error
+
+    def test_create_content_no_auth(self, client: TestClient):
+        """Test creating content fails without authentication."""
+        response = client.post(
+            "/api/contents",
+            json={
+                "title": "No Auth",
+                "content_markdown": "Test",
+                "author": "Author",
+                "source_type": "contribution",
+            },
+        )
+        assert response.status_code == 401
+
+
+class TestGetContent:
+    """Tests for GET /api/contents/{content_id}"""
+
+    def test_get_content_success(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test getting content details."""
+        content = Content(
+            title="Test Content",
+            content_markdown="# Test",
+            content_html="<h1>Test</h1>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+
+        response = client.get(f"/api/contents/{content.id}", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "Test Content"
+        assert data["author"] == "Author"
+
+    def test_get_content_not_found(
+        self, client: TestClient, auth_headers: dict
+    ):
+        """Test getting non-existent content returns 404."""
+        response = client.get("/api/contents/99999", headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_get_content_from_another_community(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_another_community: Community,
+        auth_headers: dict,
+    ):
+        """Test cannot access content from another community."""
+        content = Content(
+            title="Other Content",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            community_id=test_another_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+
+        response = client.get(f"/api/contents/{content.id}", headers=auth_headers)
+        assert response.status_code == 404  # Should not find it
+
+
+class TestUpdateContent:
+    """Tests for PUT /api/contents/{content_id}"""
+
+    def test_update_content_success(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test updating content."""
+        content = Content(
+            title="Original Title",
+            content_markdown="Original content",
+            content_html="<p>Original</p>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+
+        response = client.put(
+            f"/api/contents/{content.id}",
+            headers=auth_headers,
+            json={
+                "title": "Updated Title",
+                "content_markdown": "# Updated content",
+                "author": "Updated Author",
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "Updated Title"
+        assert "<h1>Updated content</h1>" in data["content_html"]
+
+    def test_update_content_not_found(
+        self, client: TestClient, auth_headers: dict
+    ):
+        """Test updating non-existent content returns 404."""
+        response = client.put(
+            "/api/contents/99999",
+            headers=auth_headers,
+            json={"title": "Not Found"},
+        )
+        assert response.status_code == 404
+
+
+class TestDeleteContent:
+    """Tests for DELETE /api/contents/{content_id}"""
+
+    def test_delete_content_success(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test deleting content."""
+        content = Content(
+            title="To Delete",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+        content_id = content.id
+
+        response = client.delete(f"/api/contents/{content_id}", headers=auth_headers)
+        assert response.status_code == 204
+
+        # Verify content is deleted
+        deleted = db_session.get(Content, content_id)
+        assert deleted is None
+
+    def test_delete_content_not_found(
+        self, client: TestClient, auth_headers: dict
+    ):
+        """Test deleting non-existent content returns 404."""
+        response = client.delete("/api/contents/99999", headers=auth_headers)
+        assert response.status_code == 404
+
+
+class TestUpdateContentStatus:
+    """Tests for PATCH /api/contents/{content_id}/status"""
+
+    def test_update_status_success(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test updating content status."""
+        content = Content(
+            title="Test",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            status="draft",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+
+        response = client.patch(
+            f"/api/contents/{content.id}/status",
+            headers=auth_headers,
+            json={"status": "reviewing"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "reviewing"
+
+    def test_update_status_invalid(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test updating to invalid status fails."""
+        content = Content(
+            title="Test",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+
+        response = client.patch(
+            f"/api/contents/{content.id}/status",
+            headers=auth_headers,
+            json={"status": "invalid_status"},
+        )
+        assert response.status_code == 422  # Validation error
+
+    def test_update_status_valid_transitions(
+        self,
+        client: TestClient,
+        db_session: Session,
+        test_community: Community,
+        auth_headers: dict,
+    ):
+        """Test all valid status transitions."""
+        content = Content(
+            title="Test",
+            content_markdown="Test",
+            content_html="<p>Test</p>",
+            author="Author",
+            status="draft",
+            community_id=test_community.id,
+            source_type="contribution",
+        )
+        db_session.add(content)
+        db_session.commit()
+
+        # draft -> reviewing
+        response = client.patch(
+            f"/api/contents/{content.id}/status",
+            headers=auth_headers,
+            json={"status": "reviewing"},
+        )
+        assert response.status_code == 200
+
+        # reviewing -> approved
+        response = client.patch(
+            f"/api/contents/{content.id}/status",
+            headers=auth_headers,
+            json={"status": "approved"},
+        )
+        assert response.status_code == 200
+
+        # approved -> published
+        response = client.patch(
+            f"/api/contents/{content.id}/status",
+            headers=auth_headers,
+            json={"status": "published"},
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "published"
