@@ -77,6 +77,18 @@ const router = createRouter({
       component: () => import('../views/UserManage.vue'),
       meta: { requiresAuth: true, requiresSuperuser: true },
     },
+    {
+      path: '/committees',
+      name: 'CommitteeList',
+      component: () => import('../views/CommitteeList.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/committees/:id',
+      name: 'CommitteeDetail',
+      component: () => import('../views/CommitteeDetail.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
