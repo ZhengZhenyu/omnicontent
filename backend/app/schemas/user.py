@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -29,13 +29,3 @@ class UserOut(UserBase):
     created_at: datetime
 
     model_config = {"from_attributes": True}
-
-
-class UserWithCommunities(UserOut):
-    """User with their accessible communities."""
-    communities: List["CommunityBrief"] = []
-
-
-# Avoid circular imports
-from app.schemas.community import CommunityBrief  # noqa: E402
-UserWithCommunities.model_rebuild()

@@ -92,18 +92,15 @@ router.beforeEach(async (to, from, next) => {
     try {
       const { getUserInfo } = await import('../api/auth')
       const userInfo = await getUserInfo()
-      // Backend returns user data directly with communities array
-      // We need to separate them for the store
-      const { communities, ...userData } = userInfo
-      authStore.setUser(userData as any)
-      authStore.setCommunities(communities)
+      authStore.setUser(userInfo.user)
+      authStore.setCommunities(userInfo.communities)
       
       // Set default community if available and not already set
-      if (communities.length > 0 && !communityStore.currentCommunityId) {
-        communityStore.setCommunity(communities[0].id)
+      if (userInfo.communities.length > 0 && !communityStore.currentCommunityId) {
+        communityStore.setCommunity(userInfo.communities[0].id)
       }
       
-      console.log('User info loaded:', userData.username, 'is_superuser:', userData.is_superuser)
+      console.log('User info loaded:', userInfo.user.username, 'is_superuser:', userInfo.user.is_superuser)
     } catch (error) {
       // If failed to get user info, clear auth and redirect to login
       console.error('Failed to load user info:', error)

@@ -161,7 +161,7 @@ def initial_setup(
     }
 
 
-@router.post("/register", response_model=UserWithCommunities, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(
     user_create: UserCreate,
     db: Session = Depends(get_db),
@@ -211,12 +211,15 @@ def register(
     return new_user
 
 
-@router.get("/me", response_model=UserWithCommunities)
+@router.get("/me", response_model=UserInfoResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     """
     Get current user information and their accessible communities.
     """
-    return current_user
+    return UserInfoResponse(
+        user=current_user,
+        communities=current_user.communities
+    )
 
 
 @router.get("/users", response_model=list[UserOut])

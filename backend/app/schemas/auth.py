@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -19,6 +19,12 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     """Data encoded in JWT token."""
     username: str
+
+
+class UserInfoResponse(BaseModel):
+    """Response containing user info and their communities."""
+    user: "UserOut"
+    communities: List["CommunityBrief"]
 
 
 class InitialSetupRequest(BaseModel):
@@ -44,3 +50,9 @@ class SystemStatusResponse(BaseModel):
     """System initialization status."""
     needs_setup: bool
     message: str
+
+
+# Avoid circular imports
+from app.schemas.user import UserOut  # noqa: E402
+from app.schemas.community import CommunityBrief  # noqa: E402
+UserInfoResponse.model_rebuild()

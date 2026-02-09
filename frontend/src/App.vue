@@ -95,10 +95,8 @@ onMounted(async () => {
   if (authStore.isAuthenticated && !authStore.user) {
     try {
       const userInfo = await getUserInfo()
-      // Backend returns user data directly with communities array
-      const { communities, ...userData } = userInfo
-      authStore.setUser(userData as any)
-      authStore.setCommunities(communities)
+      authStore.setUser(userInfo.user)
+      authStore.setCommunities(userInfo.communities)
     } catch {
       // If failed to get user info, clear auth
     }
