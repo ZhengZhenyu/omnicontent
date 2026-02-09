@@ -16,6 +16,7 @@ export interface Community {
   name: string
   slug: string
   description?: string
+  url?: string
   logo_url?: string
   is_active: boolean
 }

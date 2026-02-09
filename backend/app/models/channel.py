@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, JSON, Enum as SAEnum, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, JSON, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -11,10 +11,7 @@ class ChannelConfig(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    channel = Column(
-        SAEnum("wechat", "hugo", "csdn", "zhihu", name="channel_enum"),
-        nullable=False,
-    )
+    channel = Column(String(50), nullable=False)  # wechat, hugo, csdn, zhihu, ...
     # Multi-tenancy field
     community_id = Column(Integer, ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
     config = Column(JSON, default=dict)

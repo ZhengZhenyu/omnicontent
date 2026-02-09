@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import init_db
-from app.api import contents, upload, publish, analytics, auth, communities, committees
+from app.api import contents, upload, publish, analytics, auth, communities, committees, channels
 
 
 @asynccontextmanager
@@ -40,6 +40,7 @@ app.include_router(contents.router, prefix="/api/contents", tags=["Contents"])
 app.include_router(upload.router, prefix="/api/contents", tags=["Upload"])
 app.include_router(publish.router, prefix="/api/publish", tags=["Publish"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(channels.router, prefix="/api/channels", tags=["Channels"])
 app.include_router(committees.router, prefix="/api/committees", tags=["Governance"])
 
 

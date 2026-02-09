@@ -5,6 +5,7 @@ export interface CommunityCreate {
   name: string
   slug: string
   description?: string
+  url?: string
   logo_url?: string
 }
 
@@ -12,6 +13,7 @@ export interface CommunityUpdate {
   name?: string
   slug?: string
   description?: string
+  url?: string
   logo_url?: string
   is_active?: boolean
 }
