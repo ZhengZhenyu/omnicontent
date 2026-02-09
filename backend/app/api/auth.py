@@ -162,11 +162,16 @@ def initial_setup(
 
 
 @router.post("/register", response_model=UserWithCommunities, status_code=status.HTTP_201_CREATED)
-def register(user_create: UserCreate, db: Session = Depends(get_db)):
+def register(
+    user_create: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_superuser),
+):
     """
-    User registration endpoint.
+    User registration endpoint. Only superusers can create new users.
+    Superusers can optionally create other superusers.
 
-    Note: In production, you may want to restrict this endpoint or require admin approval.
+    Note: In production, you may want to require admin approval.
     """
     # Check if username already exists
     existing_user = db.query(User).filter(User.username == user_create.username).first()
@@ -184,6 +189,10 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered",
         )
 
+    # Only superusers can create superuser accounts
+    # Regular users will always have is_superuser=False
+    is_superuser = user_create.is_superuser if current_user.is_superuser else False
+
     # Create new user
     hashed_password = get_password_hash(user_create.password)
     new_user = User(
@@ -192,7 +201,7 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
         full_name=user_create.full_name,
         hashed_password=hashed_password,
         is_active=True,
-        is_superuser=False,
+        is_superuser=is_superuser,
     )
 
     db.add(new_user)

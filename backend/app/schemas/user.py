@@ -12,6 +12,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6, max_length=100)
+    is_superuser: Optional[bool] = False  # Only superusers can set this to True
 
 
 class UserUpdate(BaseModel):

@@ -57,6 +57,14 @@
             placeholder="密码（至少6位）"
           />
         </el-form-item>
+        <el-form-item label="用户类型">
+          <el-checkbox v-model="registerForm.is_superuser">
+            创建为超级管理员
+          </el-checkbox>
+          <div style="color: #909399; font-size: 12px; margin-top: 4px;">
+            超级管理员可以管理所有社区和用户
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="registerDialogVisible = false">取消</el-button>
@@ -84,6 +92,7 @@ const registerForm = ref({
   email: '',
   full_name: '',
   password: '',
+  is_superuser: false,
 })
 
 const registerRules: FormRules = {
@@ -113,7 +122,7 @@ async function loadUsers() {
 }
 
 function showRegisterDialog() {
-  registerForm.value = { username: '', email: '', full_name: '', password: '' }
+  registerForm.value = { username: '', email: '', full_name: '', password: '', is_superuser: false }
   registerDialogVisible.value = true
 }
 
@@ -128,6 +137,7 @@ async function handleRegister() {
       email: registerForm.value.email,
       password: registerForm.value.password,
       full_name: registerForm.value.full_name || undefined,
+      is_superuser: registerForm.value.is_superuser,
     })
     ElMessage.success('用户注册成功')
     registerDialogVisible.value = false
