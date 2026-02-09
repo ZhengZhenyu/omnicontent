@@ -17,7 +17,7 @@ setup-frontend:
 
 # ── Development server (starts both backend & frontend) ───────────────
 dev:
-	@echo "🚀 Starting Community Content Hub..."
+	@echo "🚀 Starting OmniContent..."
 	@echo "   Backend:  http://localhost:8000  (API docs: http://localhost:8000/docs)"
 	@echo "   Frontend: http://localhost:3000"
 	@echo "   Press Ctrl+C to stop both services"

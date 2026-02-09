@@ -65,6 +65,18 @@ const router = createRouter({
       component: () => import('../views/Settings.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/communities',
+      name: 'CommunityManage',
+      component: () => import('../views/CommunityManage.vue'),
+      meta: { requiresAuth: true, requiresSuperuser: true },
+    },
+    {
+      path: '/users',
+      name: 'UserManage',
+      component: () => import('../views/UserManage.vue'),
+      meta: { requiresAuth: true, requiresSuperuser: true },
+    },
   ],
 })
 
@@ -73,10 +85,14 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const communityStore = useCommunityStore()
   const requiresAuth = to.meta.requiresAuth !== false
+  const requiresSuperuser = to.meta.requiresSuperuser === true
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // Redirect to login if not authenticated
     next({ name: 'Login', query: { redirect: to.fullPath } })
+  } else if (requiresSuperuser && !authStore.isSuperuser) {
+    // Redirect to dashboard if not superuser
+    next({ name: 'Dashboard' })
   } else if (to.name === 'Login' && authStore.isAuthenticated) {
     // Redirect to dashboard if already logged in
     next({ name: 'Dashboard' })

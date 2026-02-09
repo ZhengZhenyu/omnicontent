@@ -1,23 +1,6 @@
 <template>
   <div class="dashboard">
-    <div class="dashboard-header">
-      <h2>仪表板</h2>
-      <div class="header-actions">
-        <community-switcher />
-        <el-dropdown @command="handleCommand">
-          <el-button link>
-            <el-icon><User /></el-icon>
-            <span style="margin-left: 4px">{{ user?.username || '用户' }}</span>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item disabled>{{ user?.email }}</el-dropdown-item>
-              <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-    </div>
+    <h2>仪表板</h2>
 
     <el-row :gutter="20" class="stats-row">
       <el-col :span="8">
@@ -68,21 +51,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { User } from '@element-plus/icons-vue'
+import { ref, onMounted } from 'vue'
 import { fetchContents, type ContentListItem } from '../api/content'
 import { getAnalyticsOverview, type AnalyticsOverview } from '../api/publish'
 import { getUserInfo } from '../api/auth'
 import { useAuthStore } from '../stores/auth'
-import CommunitySwitcher from '../components/CommunitySwitcher.vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
 
 const overview = ref<AnalyticsOverview>({ total_contents: 0, total_published: 0, channels: {} })
 const recentContents = ref<ContentListItem[]>([])
-const user = computed(() => authStore.user)
 
 onMounted(async () => {
   // Fetch user info if not already loaded
@@ -108,7 +86,6 @@ onMounted(async () => {
 function handleCommand(command: string) {
   if (command === 'logout') {
     authStore.clearAuth()
-    router.push('/login')
   }
 }
 
@@ -135,17 +112,6 @@ function statusType(s: string) {
 
 <style scoped>
 .dashboard h2 { margin: 0 0 20px; }
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
 .stat-number { font-size: 36px; font-weight: bold; color: #409eff; text-align: center; padding: 10px 0; }
 .channel-stat { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
 .channel-count { font-size: 16px; font-weight: 500; }

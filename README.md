@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.3+-green.svg)](https://vuejs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-teal.svg)](https://fastapi.tiangolo.com/)
 
 </div>
 
@@ -20,19 +20,20 @@ OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理
 ### 核心特性
 
 🏢 **多租户架构** - 共享数据库，社区级数据隔离，独立配置管理
-📅 **日历视图** - 可拖拽的内容排期沙盘，可视化策划发布计划
-📋 **看板管理** - Kanban 流程可视化 (草稿 → 审核 → 通过 → 发布)
-📊 **数据分析** - 按社区/渠道/作者多维度透视，ECharts 可视化仪表板
+🔐 **三级 RBAC 权限** - 超级管理员 / 社区管理员 / 普通用户，细粒度权限控制
+👥 **内容协作** - 内容所有权 + 协作者机制，支持多人协同编辑
 🚀 **多渠道发布** - 一键分发至微信公众号、Hugo、CSDN、知乎
 ✏️ **智能编辑** - 支持 DOCX/Markdown 上传，自动格式转换和图片提取
-🔐 **用户认证** - JWT 认证，多用户协作，完整审计日志
+📊 **效果追踪** - 发布记录、数据概览、审计日志
+🔒 **安全存储** - 渠道凭证 Fernet 加密存储，JWT 认证，bcrypt 密码哈希
+📧 **密码恢复** - 支持 SMTP 邮件发送密码重置链接
 
 ## 🎯 应用场景
 
 - **多社区运营**: 统一管理多个开源社区的内容发布
-- **内容编排**: 日历视图规划发布计划，看板管理内容流转
-- **团队协作**: 多用户权限管理，操作审计追溯
-- **数据驱动**: 多维度数据分析，发布效果可视化
+- **团队协作**: 三级权限体系，内容所有权与协作者管理，操作审计追溯
+- **内容编排**: 状态流转管理，多格式上传与转换
+- **数据驱动**: 发布记录追踪，效果可视化
 
 ## 🏗️ 技术架构
 
@@ -41,19 +42,16 @@ OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理
 | 层级 | 技术选型 | 说明 |
 |------|---------|------|
 | **前端** | Vue 3 + Pinia + Element Plus | 企业级组件库，TypeScript 支持 |
-| **日历** | FullCalendar | 拖拽式内容排期 |
-| **看板** | vue-draggable-plus | 流程可视化 |
-| **图表** | ECharts | 数据分析仪表板 |
 | **后端** | FastAPI + SQLAlchemy | 高性能异步框架，自动生成 API 文档 |
 | **数据库** | SQLite / PostgreSQL | 开发/生产环境 |
-| **认证** | JWT + bcrypt | 安全认证机制 |
+| **认证** | JWT + bcrypt + Fernet | 安全认证 + 凭证加密存储 |
 | **部署** | Docker Compose | 容器化部署 |
 
 ### 架构特点
 
 - 🎨 **前后端分离**: RESTful API 设计
 - 🏢 **多租户隔离**: Community ID 级别数据隔离
-- 🔒 **依赖注入**: FastAPI Depends 实现权限控制
+- 🔒 **RBAC 权限控制**: 三级角色 (superuser / admin / user) + FastAPI Depends 依赖注入
 - 📦 **ORM 模式**: SQLAlchemy + Alembic 数据库迁移
 - 📝 **审计日志**: 完整的操作追踪记录
 
@@ -61,8 +59,12 @@ OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理
 
 ### 已实现 ✅
 
-- ✅ **基础认证与权限**: JWT 用户认证、多用户协作、审计日志
+- ✅ **三级 RBAC 权限体系**: superuser (全局) / admin (社区级) / user (社区级)
+- ✅ **内容所有权与协作**: 内容 owner 机制 + 协作者管理，多人协同
+- ✅ **基础认证**: JWT 用户认证、首次启动强制初始化流程、密码重置邮件
 - ✅ **多租户架构**: Community ID 级别数据隔离、社区独立配置
+- ✅ **社区管理 UI**: 超级管理员可创建/编辑/删除社区
+- ✅ **用户管理 UI**: 超级管理员可管理用户角色与社区归属
 - ✅ **内容管理**: DOCX/Markdown 上传、在线编辑、封面图管理
 - ✅ **多渠道发布**:
   - 微信公众号 (API 创建草稿)
@@ -70,6 +72,7 @@ OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理
   - CSDN/知乎 (一键复制适配格式)
 - ✅ **效果追踪**: 发布记录、数据概览
 - ✅ **内容工作流**: 状态流转管理
+- ✅ **安全**: 渠道凭证 Fernet 加密存储、审计日志
 
 ### 规划中 📋
 
@@ -83,7 +86,7 @@ OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理
 
 ### 前置条件
 
-- **Python 3.11+**
+- **Python 3.11+**（推荐 3.13）
 - **Node.js 18+** / npm
 - **Make**（macOS / Linux 自带）
 
@@ -169,11 +172,15 @@ docker compose up -d
 
 ## 🗺️ 开发路线图
 
-### Phase 1: 基础认证与社区隔离 ✅
-- ✅ JWT 用户认证系统
+### Phase 1: 基础认证、RBAC 与社区隔离 ✅
+- ✅ JWT 用户认证系统 + 首次启动初始化流程
+- ✅ 三级 RBAC (superuser / admin / user)
+- ✅ 内容所有权与协作者机制
 - ✅ 多租户数据隔离
-- ✅ 社区管理 CRUD
+- ✅ 社区管理 CRUD + 前端页面
+- ✅ 用户管理 + 前端页面
 - ✅ 审计日志系统
+- ✅ 密码重置邮件
 
 ### Phase 2: 日历视图与计划发布 🚧
 - [ ] FullCalendar 日历视图集成

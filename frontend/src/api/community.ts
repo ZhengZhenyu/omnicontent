@@ -17,11 +17,12 @@ export interface CommunityUpdate {
 }
 
 export interface CommunityUser {
-  user_id: number
+  id: number
   username: string
   email: string
+  full_name: string
+  is_superuser: boolean
   role: string
-  joined_at: string
 }
 
 export async function getCommunities(): Promise<Community[]> {
@@ -70,4 +71,14 @@ export async function removeUserFromCommunity(
   userId: number
 ): Promise<void> {
   await apiClient.delete(`/communities/${communityId}/users/${userId}`)
+}
+
+export async function updateUserRole(
+  communityId: number,
+  userId: number,
+  role: string
+): Promise<void> {
+  await apiClient.put(`/communities/${communityId}/users/${userId}/role`, null, {
+    params: { role },
+  })
 }

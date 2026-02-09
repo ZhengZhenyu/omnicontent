@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import insert, select
 
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_current_active_superuser
 from app.core.security import create_access_token, verify_password, get_password_hash
 from app.config import settings
 from app.database import get_db
@@ -14,7 +14,7 @@ from app.models.community import Community
 from app.models.user import community_users
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
-    LoginRequest, Token, UserCreate, UserWithCommunities,
+    LoginRequest, Token, UserCreate, UserOut, UserWithCommunities,
     InitialSetupRequest, PasswordResetRequest,
     PasswordResetConfirm, SystemStatusResponse,
 )
@@ -208,6 +208,19 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     Get current user information and their accessible communities.
     """
     return current_user
+
+
+@router.get("/users", response_model=list[UserOut])
+def list_all_users(
+    current_user: User = Depends(get_current_active_superuser),
+    db: Session = Depends(get_db),
+):
+    """
+    List all users in the system.
+    Only superusers can list all users.
+    """
+    users = db.query(User).filter(User.is_default_admin == False).order_by(User.id).all()  # noqa: E712
+    return users
 
 
 @router.post("/password-reset/request", status_code=status.HTTP_200_OK)

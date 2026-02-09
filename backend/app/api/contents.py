@@ -171,6 +171,33 @@ def update_content_status(
 
 # Collaborators Management Endpoints
 
+@router.get("/{content_id}/collaborators")
+def list_collaborators(
+    content_id: int,
+    community_id: int = Depends(get_current_community),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    List collaborators of a content.
+    """
+    content = db.query(Content).filter(
+        Content.id == content_id,
+        Content.community_id == community_id,
+    ).first()
+    if not content:
+        raise HTTPException(404, "Content not found")
+    
+    return [
+        {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        }
+        for user in content.collaborators
+    ]
+
+
 @router.post("/{content_id}/collaborators/{user_id}", status_code=201)
 def add_collaborator(
     content_id: int,

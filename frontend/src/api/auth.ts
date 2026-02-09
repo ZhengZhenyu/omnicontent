@@ -77,3 +77,8 @@ export async function confirmPasswordReset(token: string, new_password: string):
   const { data } = await apiClient.post('/auth/password-reset/confirm', { token, new_password })
   return data
 }
+
+export async function listAllUsers(): Promise<User[]> {
+  const { data } = await apiClient.get<User[]>('/auth/users')
+  return data
+}

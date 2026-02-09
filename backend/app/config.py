@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
 
     # Frontend URL for password reset links
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:3000"
 
     # File storage
     UPLOAD_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "uploads")

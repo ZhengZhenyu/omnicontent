@@ -14,6 +14,9 @@ export interface Content {
   category: string
   cover_image: string | null
   status: string
+  owner_id: number | null
+  community_id: number
+  created_by_user_id: number | null
   created_at: string
   updated_at: string
 }
@@ -26,6 +29,7 @@ export interface ContentListItem {
   tags: string[]
   category: string
   status: string
+  owner_id: number | null
   created_at: string
   updated_at: string
 }
@@ -87,5 +91,31 @@ export async function uploadCoverImage(contentId: number, file: File): Promise<C
   const { data } = await api.post(`/contents/${contentId}/cover`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
+  return data
+}
+
+// Collaborator management
+
+export interface Collaborator {
+  id: number
+  username: string
+  email: string
+}
+
+export async function listCollaborators(contentId: number): Promise<Collaborator[]> {
+  const { data } = await api.get(`/contents/${contentId}/collaborators`)
+  return data
+}
+
+export async function addCollaborator(contentId: number, userId: number): Promise<void> {
+  await api.post(`/contents/${contentId}/collaborators/${userId}`)
+}
+
+export async function removeCollaborator(contentId: number, userId: number): Promise<void> {
+  await api.delete(`/contents/${contentId}/collaborators/${userId}`)
+}
+
+export async function transferOwnership(contentId: number, newOwnerId: number): Promise<Content> {
+  const { data } = await api.put(`/contents/${contentId}/owner/${newOwnerId}`)
   return data
 }

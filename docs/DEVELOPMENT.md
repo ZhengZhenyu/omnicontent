@@ -18,7 +18,7 @@
 ### macOS 安装
 
 ```bash
-brew install python@3.11 node git
+brew install python node git
 ```
 
 ### Linux 安装
@@ -26,10 +26,10 @@ brew install python@3.11 node git
 ```bash
 # Ubuntu/Debian
 sudo apt update
-sudo apt install python3.11 nodejs npm git
+sudo apt install python3 nodejs npm git
 
 # Fedora/RHEL
-sudo dnf install python3.11 nodejs git
+sudo dnf install python3 nodejs git
 ```
 
 ## 项目设置
@@ -61,8 +61,8 @@ make setup
 cd backend
 
 # 创建虚拟环境
-python3.11 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # 安装依赖
 pip install -r requirements.txt
@@ -70,12 +70,6 @@ pip install -r requirements.txt
 # 配置环境变量
 cp .env.example .env
 # 编辑 .env 文件
-
-# 运行数据库迁移
-alembic upgrade head
-
-# 创建初始数据 (可选)
-python scripts/seed_data.py
 ```
 
 #### 前端设置
@@ -114,7 +108,7 @@ make stop
 
 ```bash
 cd backend
-source venv/bin/activate
+source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
 

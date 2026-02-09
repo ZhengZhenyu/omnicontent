@@ -20,9 +20,10 @@ This project follows a professional and respectful code of conduct. Please be ki
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.11+（推荐 3.13）
 - Node.js 18+
 - Git
+- Make
 
 ### Setup Development Environment
 
@@ -31,20 +32,26 @@ This project follows a professional and respectful code of conduct. Please be ki
 git clone https://github.com/ZhengZhenyu/omnicontent.git
 cd omnicontent
 
-# Backend setup
+# One-command setup (recommended)
+make setup
+
+# Or manual setup:
+# Backend
 cd backend
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-alembic upgrade head
+cp .env.example .env       # Edit .env as needed
 
-# Frontend setup
+# Frontend
 cd ../frontend
 npm install
 
 # Run development servers
-# Backend: uvicorn app.main:app --reload
-# Frontend: npm run dev
+make dev
+# Or manually:
+# Backend: cd backend && .venv/bin/python -m uvicorn app.main:app --reload --port 8000
+# Frontend: cd frontend && npx vite --port 3000
 ```
 
 ## Development Workflow

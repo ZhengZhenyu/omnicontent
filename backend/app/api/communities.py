@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import update
+from sqlalchemy import update, select
 
 from app.core.dependencies import get_current_user, get_current_active_superuser
 from app.database import get_db
@@ -15,6 +15,7 @@ from app.schemas import (
     CommunityBrief,
     CommunityWithMembers,
     CommunityMemberAdd,
+    UserBrief,
 )
 
 router = APIRouter()
@@ -211,6 +212,50 @@ def delete_community(
 
     db.delete(community)
     db.commit()
+
+
+@router.get("/{community_id}/users")
+def get_community_users(
+    community_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get users of a community with their roles.
+    """
+    community = db.query(Community).filter(Community.id == community_id).first()
+    if not community:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Community not found",
+        )
+
+    # Check access rights
+    if not current_user.is_superuser and community not in current_user.communities:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this community",
+        )
+
+    # Query users with their roles
+    stmt = (
+        select(User, community_users.c.role)
+        .join(community_users, User.id == community_users.c.user_id)
+        .where(community_users.c.community_id == community_id)
+    )
+    results = db.execute(stmt).all()
+
+    return [
+        {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name or "",
+            "is_superuser": user.is_superuser,
+            "role": role,
+        }
+        for user, role in results
+    ]
 
 
 @router.post("/{community_id}/users", status_code=status.HTTP_201_CREATED)

@@ -84,6 +84,75 @@
         style="height: 600px"
       />
     </el-card>
+
+    <!-- Collaborator Management (only for existing content) -->
+    <el-card v-if="!isNew" style="margin-top: 16px">
+      <template #header>
+        <div class="collab-header">
+          <span>协作者管理</span>
+          <el-tag v-if="isOwner" type="success" size="small">你是所有者</el-tag>
+        </div>
+      </template>
+      <div class="collab-section">
+        <div class="collab-add" v-if="isOwner || isSuperuser">
+          <el-select
+            v-model="selectedCollaboratorId"
+            filterable
+            placeholder="搜索用户添加协作者"
+            style="width: 280px"
+          >
+            <el-option
+              v-for="u in availableCommunityUsers"
+              :key="u.id"
+              :label="`${u.username} (${u.email})`"
+              :value="u.id"
+            />
+          </el-select>
+          <el-button type="primary" :disabled="!selectedCollaboratorId" @click="handleAddCollaborator">
+            添加协作者
+          </el-button>
+        </div>
+        <div v-if="collaborators.length > 0" class="collab-list">
+          <el-tag
+            v-for="collab in collaborators"
+            :key="collab.id"
+            :closable="isOwner || isSuperuser"
+            size="default"
+            style="margin: 4px"
+            @close="handleRemoveCollaborator(collab.id)"
+          >
+            {{ collab.username }}
+          </el-tag>
+        </div>
+        <div v-else class="collab-empty">暂无协作者</div>
+
+        <!-- Ownership transfer -->
+        <div v-if="isOwner || isSuperuser" class="ownership-section">
+          <el-divider />
+          <div class="ownership-transfer">
+            <span class="label">转让所有权：</span>
+            <el-select
+              v-model="newOwnerId"
+              filterable
+              placeholder="选择新所有者"
+              style="width: 240px"
+            >
+              <el-option
+                v-for="u in availableCommunityUsers"
+                :key="u.id"
+                :label="`${u.username} (${u.email})`"
+                :value="u.id"
+              />
+            </el-select>
+            <el-popconfirm title="确定转让所有权？" @confirm="handleTransferOwnership">
+              <template #reference>
+                <el-button type="warning" :disabled="!newOwnerId" size="small">确认转让</el-button>
+              </template>
+            </el-popconfirm>
+          </div>
+        </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -94,16 +163,48 @@ import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { MdEditor as MdEditorV3 } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
-import { fetchContent, createContent, updateContent, uploadCoverImage } from '../api/content'
+import {
+  fetchContent,
+  createContent,
+  updateContent,
+  uploadCoverImage,
+  listCollaborators,
+  addCollaborator,
+  removeCollaborator,
+  transferOwnership,
+} from '../api/content'
+import { getCommunityUsers, type CommunityUser } from '../api/community'
+import { useAuthStore } from '../stores/auth'
+import { useCommunityStore } from '../stores/community'
 
 const route = useRoute()
 const router = useRouter()
 const saving = ref(false)
 const coverInput = ref<HTMLInputElement | null>(null)
 const coverImageUrl = ref<string | null>(null)
+const authStore = useAuthStore()
+const communityStore = useCommunityStore()
 
 const contentId = computed(() => route.params.id ? Number(route.params.id) : null)
 const isNew = computed(() => !contentId.value)
+const isSuperuser = computed(() => authStore.isSuperuser)
+
+const contentOwnerId = ref<number | null>(null)
+const isOwner = computed(() => contentOwnerId.value === authStore.user?.id)
+
+// Collaborator state
+const collaborators = ref<{ id: number; username: string; email: string }[]>([])
+const communityMembers = ref<CommunityUser[]>([])
+const selectedCollaboratorId = ref<number | null>(null)
+const newOwnerId = ref<number | null>(null)
+
+const availableCommunityUsers = computed(() => {
+  const collabIds = new Set(collaborators.value.map((c) => c.id))
+  const currentUserId = authStore.user?.id
+  return communityMembers.value.filter(
+    (u) => !collabIds.has(u.id) && u.id !== currentUserId && u.id !== contentOwnerId.value
+  )
+})
 
 const form = ref({
   title: '',
@@ -128,6 +229,24 @@ onMounted(async () => {
     }
     tagsInput.value = data.tags.join(', ')
     coverImageUrl.value = data.cover_image || null
+    contentOwnerId.value = data.owner_id
+
+    // Load collaborators
+    try {
+      collaborators.value = await listCollaborators(contentId.value)
+    } catch {
+      // ignore
+    }
+
+    // Load community members for adding collaborators
+    const communityId = communityStore.currentCommunityId
+    if (communityId) {
+      try {
+        communityMembers.value = await getCommunityUsers(communityId)
+      } catch {
+        // ignore
+      }
+    }
   }
 })
 
@@ -192,6 +311,43 @@ async function handleSave() {
     saving.value = false
   }
 }
+
+// Collaborator management handlers
+
+async function handleAddCollaborator() {
+  if (!contentId.value || !selectedCollaboratorId.value) return
+  try {
+    await addCollaborator(contentId.value, selectedCollaboratorId.value)
+    ElMessage.success('协作者添加成功')
+    collaborators.value = await listCollaborators(contentId.value)
+    selectedCollaboratorId.value = null
+  } catch (e: any) {
+    ElMessage.error(e?.response?.data?.detail || '添加协作者失败')
+  }
+}
+
+async function handleRemoveCollaborator(userId: number) {
+  if (!contentId.value) return
+  try {
+    await removeCollaborator(contentId.value, userId)
+    ElMessage.success('协作者已移除')
+    collaborators.value = await listCollaborators(contentId.value)
+  } catch (e: any) {
+    ElMessage.error(e?.response?.data?.detail || '移除协作者失败')
+  }
+}
+
+async function handleTransferOwnership() {
+  if (!contentId.value || !newOwnerId.value) return
+  try {
+    await transferOwnership(contentId.value, newOwnerId.value)
+    ElMessage.success('所有权已转让')
+    contentOwnerId.value = newOwnerId.value
+    newOwnerId.value = null
+  } catch (e: any) {
+    ElMessage.error(e?.response?.data?.detail || '转让所有权失败')
+  }
+}
 </script>
 
 <style scoped>
@@ -199,6 +355,41 @@ async function handleSave() {
 .page-header h2 { margin: 0; }
 .actions { display: flex; gap: 8px; }
 .meta-card :deep(.el-form-item) { margin-bottom: 0; }
+
+.collab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collab-add {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.collab-list {
+  padding: 8px 0;
+}
+
+.collab-empty {
+  color: #909399;
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+.ownership-section .label {
+  font-size: 14px;
+  color: #606266;
+  margin-right: 8px;
+}
+
+.ownership-transfer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
 .cover-upload-area {
   width: 320px;

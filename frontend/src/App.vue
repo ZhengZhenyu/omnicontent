@@ -28,18 +28,74 @@
           <el-icon><Setting /></el-icon>
           <span>渠道设置</span>
         </el-menu-item>
+        <el-menu-item v-if="isSuperuser" index="/communities">
+          <el-icon><OfficeBuilding /></el-icon>
+          <span>社区管理</span>
+        </el-menu-item>
+        <el-menu-item v-if="isSuperuser" index="/users">
+          <el-icon><UserFilled /></el-icon>
+          <span>用户管理</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
-    <el-main class="app-main">
-      <router-view />
-    </el-main>
+    <el-container>
+      <el-header class="app-header">
+        <community-switcher />
+        <div class="header-right">
+          <el-dropdown @command="handleCommand">
+            <span class="user-info">
+              <el-icon><User /></el-icon>
+              <span>{{ user?.username || '用户' }}</span>
+              <el-tag v-if="isSuperuser" size="small" type="danger" style="margin-left: 6px">超级管理员</el-tag>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item disabled>{{ user?.email }}</el-dropdown-item>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </el-header>
+      <el-main class="app-main">
+        <router-view />
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from './stores/auth'
+import { getUserInfo } from './api/auth'
+import CommunitySwitcher from './components/CommunitySwitcher.vue'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
+const user = computed(() => authStore.user)
+const isSuperuser = computed(() => authStore.isSuperuser)
+
+onMounted(async () => {
+  if (authStore.isAuthenticated && !authStore.user) {
+    try {
+      const info = await getUserInfo()
+      authStore.setUser(info.user)
+      authStore.setCommunities(info.communities)
+    } catch {
+      // If failed to get user info, clear auth
+    }
+  }
+})
+
+function handleCommand(command: string) {
+  if (command === 'logout') {
+    authStore.clearAuth()
+    router.push('/login')
+  }
+}
 </script>
 
 <style>
@@ -66,6 +122,35 @@ body {
   font-size: 18px;
   font-weight: bold;
   border-bottom: 1px solid #333;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-bottom: 1px solid #e4e7ed;
+  padding: 0 20px;
+  height: 56px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #606266;
+  font-size: 14px;
+}
+
+.user-info:hover {
+  color: #409eff;
 }
 
 .app-main {
