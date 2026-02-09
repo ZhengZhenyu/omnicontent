@@ -14,7 +14,7 @@ from app.models.community import Community
 from app.models.user import community_users
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
-    LoginRequest, Token, UserCreate, UserOut, UserWithCommunities,
+    LoginRequest, Token, UserCreate, UserOut, UserInfoResponse,
     InitialSetupRequest, PasswordResetRequest,
     PasswordResetConfirm, SystemStatusResponse,
 )
