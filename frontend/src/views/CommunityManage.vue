@@ -19,6 +19,7 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item command="edit">编辑</el-dropdown-item>
+                    <el-dropdown-item command="channels">渠道管理</el-dropdown-item>
                     <el-dropdown-item command="members">成员管理</el-dropdown-item>
                     <el-dropdown-item command="toggle">{{ community.is_active ? '停用' : '启用' }}</el-dropdown-item>
                     <el-dropdown-item command="delete" divided style="color: #f56c6c">删除</el-dropdown-item>
@@ -29,6 +30,9 @@
           </template>
           <div class="community-info">
             <p class="slug"><el-icon><Link /></el-icon> {{ community.slug }}</p>
+            <p v-if="community.url" class="url">
+              <a :href="community.url" target="_blank" rel="noopener">{{ community.url }}</a>
+            </p>
             <p class="desc">{{ community.description || '暂无描述' }}</p>
           </div>
         </el-card>
@@ -64,6 +68,9 @@
             :rows="3"
             placeholder="社区描述"
           />
+        </el-form-item>
+        <el-form-item label="项目地址">
+          <el-input v-model="communityForm.url" placeholder="社区官网或项目仓库地址（可选）" />
         </el-form-item>
         <el-form-item label="Logo URL">
           <el-input v-model="communityForm.logo_url" placeholder="Logo 图片地址（可选）" />
@@ -139,6 +146,117 @@
         </el-table-column>
       </el-table>
     </el-dialog>
+
+    <!-- Channel Management Dialog -->
+    <el-dialog
+      v-model="channelsDialogVisible"
+      :title="`渠道管理 - ${selectedCommunity?.name || ''}`"
+      width="750px"
+    >
+      <div class="channels-header">
+        <el-select v-model="newChannelType" placeholder="选择渠道类型" style="width: 200px">
+          <el-option
+            v-for="ch in availableChannelTypes"
+            :key="ch.value"
+            :label="ch.label"
+            :value="ch.value"
+          />
+        </el-select>
+        <el-button type="primary" :disabled="!newChannelType" @click="showAddChannelForm">
+          添加渠道
+        </el-button>
+      </div>
+
+      <el-table :data="channelConfigs" stripe style="margin-top: 16px">
+        <el-table-column label="渠道" width="140">
+          <template #default="{ row }">
+            {{ channelLabelMap[row.channel] || row.channel }}
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-switch
+              :model-value="row.enabled"
+              @change="(val: boolean) => handleToggleChannel(row, val)"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column label="配置" min-width="200">
+          <template #default="{ row }">
+            <span v-if="Object.keys(row.config).length === 0" class="hint-text">未配置</span>
+            <span v-else class="hint-text">已配置 {{ Object.keys(row.config).length }} 项</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="160">
+          <template #default="{ row }">
+            <el-button size="small" @click="showEditChannelForm(row)">编辑</el-button>
+            <el-popconfirm title="确定删除该渠道？" @confirm="handleDeleteChannel(row.id)">
+              <template #reference>
+                <el-button size="small" type="danger">删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <!-- Channel Config Edit Dialog -->
+    <el-dialog
+      v-model="channelFormVisible"
+      :title="editingChannel ? '编辑渠道配置' : '添加渠道'"
+      width="500px"
+    >
+      <el-form label-width="100px" size="default">
+        <el-form-item label="渠道类型">
+          <el-input :model-value="channelLabelMap[channelForm.channel] || channelForm.channel" disabled />
+        </el-form-item>
+
+        <template v-if="channelForm.channel === 'wechat'">
+          <el-form-item label="AppID">
+            <el-input v-model="channelForm.config.app_id" placeholder="微信公众号 AppID" />
+          </el-form-item>
+          <el-form-item label="AppSecret">
+            <el-input
+              v-model="channelForm.config.app_secret"
+              type="password"
+              show-password
+              placeholder="微信公众号 AppSecret"
+              @focus="handleSecretFocus('app_secret')"
+            />
+            <div v-if="isSecretMasked(channelForm.config.app_secret)" class="secret-hint">已配置，留空则保持不变</div>
+          </el-form-item>
+        </template>
+
+        <template v-else-if="channelForm.channel === 'hugo'">
+          <el-form-item label="仓库路径">
+            <el-input v-model="channelForm.config.repo_path" placeholder="Hugo 仓库本地路径" />
+          </el-form-item>
+          <el-form-item label="内容目录">
+            <el-input v-model="channelForm.config.content_dir" placeholder="如 content/posts" />
+          </el-form-item>
+        </template>
+
+        <template v-else-if="channelForm.channel === 'csdn'">
+          <el-form-item label="说明">
+            <span class="hint-text">CSDN 使用复制粘贴方式发布，无需额外配置</span>
+          </el-form-item>
+        </template>
+
+        <template v-else-if="channelForm.channel === 'zhihu'">
+          <el-form-item label="说明">
+            <span class="hint-text">知乎使用复制粘贴方式发布，无需额外配置</span>
+          </el-form-item>
+        </template>
+
+        <el-form-item label="启用">
+          <el-switch v-model="channelForm.enabled" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="channelFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveChannel">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -158,12 +276,21 @@ import {
   updateUserRole,
   type CommunityUser,
 } from '../api/community'
+import {
+  listChannels,
+  createChannel,
+  updateChannel,
+  deleteChannel,
+  type ChannelConfig,
+} from '../api/channel'
 import { listAllUsers } from '../api/auth'
 import type { User } from '../stores/auth'
 
 const communities = ref<Community[]>([])
 const dialogVisible = ref(false)
 const membersDialogVisible = ref(false)
+const channelsDialogVisible = ref(false)
+const channelFormVisible = ref(false)
 const isEditing = ref(false)
 const submitting = ref(false)
 const editingId = ref<number | null>(null)
@@ -173,6 +300,7 @@ const communityForm = ref({
   name: '',
   slug: '',
   description: '',
+  url: '',
   logo_url: '',
 })
 
@@ -194,6 +322,137 @@ const availableUsers = computed(() => {
   return allUsers.value.filter((u) => !memberIds.has(u.id))
 })
 
+// ── Channel management ──────────────────────────────────────────────
+const channelConfigs = ref<ChannelConfig[]>([])
+const newChannelType = ref('')
+const editingChannel = ref<ChannelConfig | null>(null)
+const channelForm = ref({
+  channel: '',
+  config: {} as Record<string, string>,
+  enabled: false,
+})
+
+const channelLabelMap: Record<string, string> = {
+  wechat: '微信公众号',
+  hugo: 'Hugo 博客',
+  csdn: 'CSDN',
+  zhihu: '知乎',
+}
+
+const allChannelTypes = [
+  { value: 'wechat', label: '微信公众号' },
+  { value: 'hugo', label: 'Hugo 博客' },
+  { value: 'csdn', label: 'CSDN' },
+  { value: 'zhihu', label: '知乎' },
+]
+
+const availableChannelTypes = computed(() => {
+  const configured = new Set(channelConfigs.value.map((c) => c.channel))
+  return allChannelTypes.filter((t) => !configured.has(t.value))
+})
+
+function isSecretMasked(val: string | undefined): boolean {
+  return !!val && val.startsWith('••••')
+}
+
+function handleSecretFocus(field: string) {
+  if (isSecretMasked(channelForm.value.config[field])) {
+    channelForm.value.config[field] = ''
+  }
+}
+
+function getDefaultConfig(channel: string): Record<string, string> {
+  switch (channel) {
+    case 'wechat':
+      return { app_id: '', app_secret: '' }
+    case 'hugo':
+      return { repo_path: '', content_dir: 'content/posts' }
+    default:
+      return {}
+  }
+}
+
+function showAddChannelForm() {
+  if (!newChannelType.value) return
+  editingChannel.value = null
+  channelForm.value = {
+    channel: newChannelType.value,
+    config: getDefaultConfig(newChannelType.value),
+    enabled: false,
+  }
+  channelFormVisible.value = true
+}
+
+function showEditChannelForm(cfg: ChannelConfig) {
+  editingChannel.value = cfg
+  channelForm.value = {
+    channel: cfg.channel,
+    config: { ...getDefaultConfig(cfg.channel), ...cfg.config },
+    enabled: cfg.enabled,
+  }
+  channelFormVisible.value = true
+}
+
+async function loadChannels() {
+  try {
+    channelConfigs.value = await listChannels()
+  } catch {
+    ElMessage.error('加载渠道列表失败')
+  }
+}
+
+async function handleSaveChannel() {
+  // Build config, skip masked values
+  const configToSend: Record<string, string> = {}
+  for (const [k, v] of Object.entries(channelForm.value.config)) {
+    if (!isSecretMasked(v)) {
+      configToSend[k] = v
+    }
+  }
+
+  try {
+    if (editingChannel.value) {
+      await updateChannel(editingChannel.value.id, {
+        config: configToSend,
+        enabled: channelForm.value.enabled,
+      })
+      ElMessage.success('渠道配置已更新')
+    } else {
+      await createChannel({
+        channel: channelForm.value.channel,
+        config: configToSend,
+        enabled: channelForm.value.enabled,
+      })
+      ElMessage.success('渠道已添加')
+      newChannelType.value = ''
+    }
+    channelFormVisible.value = false
+    await loadChannels()
+  } catch (e: any) {
+    ElMessage.error(e?.response?.data?.detail || '保存失败')
+  }
+}
+
+async function handleToggleChannel(cfg: ChannelConfig, val: boolean) {
+  try {
+    await updateChannel(cfg.id, { enabled: val })
+    cfg.enabled = val
+  } catch {
+    ElMessage.error('操作失败')
+  }
+}
+
+async function handleDeleteChannel(channelId: number) {
+  try {
+    await deleteChannel(channelId)
+    ElMessage.success('渠道已删除')
+    await loadChannels()
+  } catch {
+    ElMessage.error('删除失败')
+  }
+}
+
+// ── Community CRUD ──────────────────────────────────────────────────
 async function loadCommunities() {
   try {
     communities.value = await getCommunities()
@@ -205,7 +464,7 @@ async function loadCommunities() {
 function showCreateDialog() {
   isEditing.value = false
   editingId.value = null
-  communityForm.value = { name: '', slug: '', description: '', logo_url: '' }
+  communityForm.value = { name: '', slug: '', description: '', url: '', logo_url: '' }
   dialogVisible.value = true
 }
 
@@ -216,6 +475,7 @@ function showEditDialog(community: Community) {
     name: community.name,
     slug: community.slug,
     description: community.description || '',
+    url: community.url || '',
     logo_url: community.logo_url || '',
   }
   dialogVisible.value = true
@@ -231,6 +491,7 @@ async function handleSubmit() {
       await updateCommunity(editingId.value, {
         name: communityForm.value.name,
         description: communityForm.value.description,
+        url: communityForm.value.url || undefined,
         logo_url: communityForm.value.logo_url || undefined,
       })
       ElMessage.success('社区更新成功')
@@ -251,6 +512,11 @@ async function handleCommunityAction(command: string, community: Community) {
   switch (command) {
     case 'edit':
       showEditDialog(community)
+      break
+    case 'channels':
+      selectedCommunity.value = community
+      await loadChannels()
+      channelsDialogVisible.value = true
       break
     case 'members':
       await showMembersDialog(community)
@@ -370,7 +636,18 @@ onMounted(loadCommunities)
   display: flex;
   align-items: center;
   gap: 4px;
+  margin: 0 0 4px;
+}
+.community-info .url {
+  font-size: 13px;
   margin: 0 0 8px;
+}
+.community-info .url a {
+  color: #409eff;
+  text-decoration: none;
+}
+.community-info .url a:hover {
+  text-decoration: underline;
 }
 .community-info .desc {
   color: #606266;
@@ -379,9 +656,13 @@ onMounted(loadCommunities)
   line-height: 1.6;
 }
 
-.members-header {
+.members-header,
+.channels-header {
   display: flex;
   gap: 12px;
   align-items: center;
 }
+
+.hint-text { color: #999; font-size: 13px; }
+.secret-hint { color: #909399; font-size: 12px; margin-top: 4px; }
 </style>

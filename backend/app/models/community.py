@@ -14,6 +14,7 @@ class Community(Base):
     name = Column(String(200), unique=True, nullable=False, index=True)
     slug = Column(String(100), unique=True, nullable=False, index=True)  # URL-friendly identifier
     description = Column(Text, default="")
+    url = Column(String(500), nullable=True)  # 社区官网或项目仓库地址
     logo_url = Column(String(500), nullable=True)
     settings = Column(JSON, default=dict)  # Community-level settings
     is_active = Column(Boolean, default=True)
