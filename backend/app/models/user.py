@@ -13,7 +13,7 @@ community_users = Table(
     Column("id", Integer, primary_key=True),
     Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
     Column("community_id", Integer, ForeignKey("communities.id", ondelete="CASCADE"), nullable=False),
-    Column("role", String(50), default="member"),  # Reserved for future RBAC
+    Column("role", String(50), default="user"),  # 'admin', 'user' (superuser is global)
     Column("joined_at", DateTime, default=datetime.utcnow),
 )
 
@@ -37,5 +37,11 @@ class User(Base):
         secondary=community_users,
         back_populates="members",
     )
-    created_contents = relationship("Content", back_populates="creator")
+    created_contents = relationship("Content", foreign_keys="Content.created_by_user_id", back_populates="creator")
+    owned_contents = relationship("Content", foreign_keys="Content.owner_id", back_populates="owner")
+    collaborated_contents = relationship(
+        "Content",
+        secondary="content_collaborators",
+        back_populates="collaborators",
+    )
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")

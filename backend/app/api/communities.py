@@ -2,10 +2,12 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import update
 
 from app.core.dependencies import get_current_user, get_current_active_superuser
 from app.database import get_db
 from app.models import User, Community
+from app.models.user import community_users
 from app.schemas import (
     CommunityCreate,
     CommunityUpdate,
@@ -308,3 +310,70 @@ def remove_user_from_community(
     # Remove user from community
     community.members.remove(user)
     db.commit()
+
+
+@router.put("/{community_id}/users/{user_id}/role", status_code=status.HTTP_200_OK)
+def update_user_role(
+    community_id: int,
+    user_id: int,
+    role: str,
+    current_user: User = Depends(get_current_active_superuser),
+    db: Session = Depends(get_db),
+):
+    """
+    Update a user's role in a community.
+    
+    Only superusers can update user roles.
+    Valid roles: 'admin', 'user'
+    
+    Args:
+        community_id: Community ID
+        user_id: User ID
+        role: New role ('admin' or 'user')
+        current_user: Current authenticated superuser
+        db: Database session
+    
+    Returns:
+        dict: Success message
+    
+    Raises:
+        HTTPException: If community/user not found, invalid role, or user not a member
+    """
+    if role not in ['admin', 'user']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid role. Must be 'admin' or 'user'",
+        )
+    
+    community = db.query(Community).filter(Community.id == community_id).first()
+    if not community:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Community not found",
+        )
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    # Check if user is a member
+    if user not in community.members:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is not a member of this community",
+        )
+    
+    # Update role in community_users table
+    stmt = (
+        update(community_users)
+        .where(community_users.c.user_id == user_id)
+        .where(community_users.c.community_id == community_id)
+        .values(role=role)
+    )
+    db.execute(stmt)
+    db.commit()
+    
+    return {"message": f"User role updated to {role} successfully"}

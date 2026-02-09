@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import insert, select
 
 from app.core.dependencies import get_current_user
 from app.core.security import create_access_token, verify_password, get_password_hash
@@ -10,6 +11,7 @@ from app.config import settings
 from app.database import get_db
 from app.models import User
 from app.models.community import Community
+from app.models.user import community_users
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
     LoginRequest, Token, UserCreate, UserWithCommunities,
@@ -125,10 +127,23 @@ def initial_setup(
         is_default_admin=False,
     )
     db.add(new_admin)
+    db.flush()  # Get new_admin.id
 
-    # Transfer community memberships from default admin to new admin
-    for community in current_user.communities:
-        community.members.append(new_admin)
+    # Transfer community memberships with roles from default admin to new admin
+    # Query existing roles from community_users
+    stmt = select(community_users.c.community_id, community_users.c.role).where(
+        community_users.c.user_id == current_user.id
+    )
+    memberships = db.execute(stmt).fetchall()
+    
+    for community_id, role in memberships:
+        # Add new admin with the same role
+        insert_stmt = insert(community_users).values(
+            user_id=new_admin.id,
+            community_id=community_id,
+            role=role
+        )
+        db.execute(insert_stmt)
 
     # Delete the default admin account
     db.delete(current_user)

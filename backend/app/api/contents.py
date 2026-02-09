@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, get_current_community
+from app.core.dependencies import get_current_user, get_current_community, check_content_edit_permission
 from app.database import get_db
 from app.models import User, Content
 from app.schemas.content import (
@@ -67,6 +67,7 @@ def create_content(
         status="draft",
         community_id=community_id,
         created_by_user_id=current_user.id,
+        owner_id=current_user.id,  # Creator is the initial owner
     )
     db.add(content)
     db.commit()
@@ -104,6 +105,11 @@ def update_content(
     ).first()
     if not content:
         raise HTTPException(404, "Content not found")
+    
+    # Check edit permission
+    if not check_content_edit_permission(content, current_user, db):
+        raise HTTPException(403, "You don't have permission to edit this content")
+    
     update_data = data.model_dump(exclude_unset=True)
     if "content_markdown" in update_data:
         update_data["content_html"] = convert_markdown_to_html(update_data["content_markdown"])
@@ -127,6 +133,11 @@ def delete_content(
     ).first()
     if not content:
         raise HTTPException(404, "Content not found")
+    
+    # Check edit permission
+    if not check_content_edit_permission(content, current_user, db):
+        raise HTTPException(403, "You don't have permission to delete this content")
+    
     db.delete(content)
     db.commit()
 
@@ -147,7 +158,127 @@ def update_content_status(
     ).first()
     if not content:
         raise HTTPException(404, "Content not found")
+    
+    # Check edit permission
+    if not check_content_edit_permission(content, current_user, db):
+        raise HTTPException(403, "You don't have permission to update this content's status")
+    
     content.status = data.status
     db.commit()
     db.refresh(content)
+    return content
+
+
+# Collaborators Management Endpoints
+
+@router.post("/{content_id}/collaborators/{user_id}", status_code=201)
+def add_collaborator(
+    content_id: int,
+    user_id: int,
+    community_id: int = Depends(get_current_community),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Add a collaborator to a content.
+    Only the owner can add collaborators.
+    """
+    content = db.query(Content).filter(
+        Content.id == content_id,
+        Content.community_id == community_id,
+    ).first()
+    if not content:
+        raise HTTPException(404, "Content not found")
+    
+    # Only owner can add collaborators
+    if content.owner_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(403, "Only the content owner can add collaborators")
+    
+    # Check if user exists and is a member of the community
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    
+    if not current_user.is_superuser and user not in content.community.members:
+        raise HTTPException(400, "User is not a member of this community")
+    
+    # Check if already a collaborator
+    if user in content.collaborators:
+        raise HTTPException(400, "User is already a collaborator")
+    
+    content.collaborators.append(user)
+    db.commit()
+    
+    return {"message": "Collaborator added successfully"}
+
+
+@router.delete("/{content_id}/collaborators/{user_id}", status_code=204)
+def remove_collaborator(
+    content_id: int,
+    user_id: int,
+    community_id: int = Depends(get_current_community),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Remove a collaborator from a content.
+    Only the owner can remove collaborators.
+    """
+    content = db.query(Content).filter(
+        Content.id == content_id,
+        Content.community_id == community_id,
+    ).first()
+    if not content:
+        raise HTTPException(404, "Content not found")
+    
+    # Only owner can remove collaborators
+    if content.owner_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(403, "Only the content owner can remove collaborators")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    
+    if user not in content.collaborators:
+        raise HTTPException(400, "User is not a collaborator")
+    
+    content.collaborators.remove(user)
+    db.commit()
+
+
+@router.put("/{content_id}/owner/{new_owner_id}", response_model=ContentOut)
+def transfer_ownership(
+    content_id: int,
+    new_owner_id: int,
+    community_id: int = Depends(get_current_community),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Transfer content ownership to another user.
+    Only the current owner or superuser can transfer ownership.
+    """
+    content = db.query(Content).filter(
+        Content.id == content_id,
+        Content.community_id == community_id,
+    ).first()
+    if not content:
+        raise HTTPException(404, "Content not found")
+    
+    # Only owner or superuser can transfer ownership
+    if content.owner_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(403, "Only the content owner can transfer ownership")
+    
+    # Check if new owner exists and is a member of the community
+    new_owner = db.query(User).filter(User.id == new_owner_id).first()
+    if not new_owner:
+        raise HTTPException(404, "New owner not found")
+    
+    if not current_user.is_superuser and new_owner not in content.community.members:
+        raise HTTPException(400, "New owner is not a member of this community")
+    
+    content.owner_id = new_owner_id
+    db.commit()
+    db.refresh(content)
+    
     return content

@@ -42,8 +42,9 @@ def seed_default_admin():
     """Create the default admin account and default community if no users exist."""
     from app.config import settings
     from app.core.security import get_password_hash
-    from app.models.user import User
+    from app.models.user import User, community_users
     from app.models.community import Community
+    from sqlalchemy import insert
 
     db = SessionLocal()
     try:
@@ -72,7 +73,14 @@ def seed_default_admin():
                 )
                 db.add(default_community)
                 db.flush()  # Get IDs assigned
-                default_community.members.append(default_admin)
+                
+                # Add admin to community with 'admin' role
+                stmt = insert(community_users).values(
+                    user_id=default_admin.id,
+                    community_id=default_community.id,
+                    role='admin'
+                )
+                db.execute(stmt)
 
             db.commit()
             print(f"[INFO] Default admin account created: {settings.DEFAULT_ADMIN_USERNAME}")

@@ -2,10 +2,12 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, Header, status
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.core.security import decode_access_token
 from app.database import get_db
 from app.models import User, Community
+from app.models.user import community_users
 
 
 async def get_current_user(
@@ -131,3 +133,109 @@ async def get_current_active_superuser(
             detail="Not enough permissions",
         )
     return current_user
+
+
+def get_user_community_role(
+    user: User,
+    community_id: int,
+    db: Session,
+) -> Optional[str]:
+    """
+    Get user's role in a specific community.
+
+    Args:
+        user: User object
+        community_id: Community ID
+        db: Database session
+
+    Returns:
+        str: User role ('admin' or 'user') or None if not a member
+    """
+    if user.is_superuser:
+        return "superuser"
+    
+    # Query the community_users table for the role
+    stmt = select(community_users.c.role).where(
+        community_users.c.user_id == user.id,
+        community_users.c.community_id == community_id
+    )
+    result = db.execute(stmt).scalar()
+    return result
+
+
+async def get_community_admin(
+    x_community_id: Optional[int] = Header(None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    """
+    Dependency to verify user is a community admin or superuser.
+
+    Args:
+        x_community_id: Community ID from header
+        user: Current authenticated user
+        db: Database session
+
+    Returns:
+        User: The admin user
+
+    Raises:
+        HTTPException: If user is not an admin of the community
+    """
+    if x_community_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Community-Id header is required",
+        )
+
+    role = get_user_community_role(user, x_community_id, db)
+    
+    if role not in ["superuser", "admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Community admin permissions required",
+        )
+    
+    return user
+
+
+def check_content_edit_permission(
+    content,
+    user: User,
+    db: Session,
+) -> bool:
+    """
+    Check if user has permission to edit a content.
+
+    Rules:
+    - Owner can always edit
+    - Collaborators can always edit
+    - Community admins can edit
+    - Superusers can edit
+
+    Args:
+        content: Content object
+        user: User object
+        db: Database session
+
+    Returns:
+        bool: True if user can edit
+    """
+    # Superuser can edit anything
+    if user.is_superuser:
+        return True
+    
+    # Owner can edit
+    if content.owner_id == user.id:
+        return True
+    
+    # Collaborators can edit
+    if user in content.collaborators:
+        return True
+    
+    # Community admin can edit
+    role = get_user_community_role(user, content.community_id, db)
+    if role == "admin":
+        return True
+    
+    return False

@@ -1,9 +1,20 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, Enum as SAEnum, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, Enum as SAEnum, ForeignKey, Table
 from sqlalchemy.orm import relationship
 
 from app.database import Base
+
+
+# Association table for content collaborators
+content_collaborators = Table(
+    "content_collaborators",
+    Base.metadata,
+    Column("id", Integer, primary_key=True),
+    Column("content_id", Integer, ForeignKey("contents.id", ondelete="CASCADE"), nullable=False),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+    Column("added_at", DateTime, default=datetime.utcnow),
+)
 
 
 class Content(Base):
@@ -29,6 +40,8 @@ class Content(Base):
     # Multi-tenancy fields
     community_id = Column(Integer, ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
     created_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    # Ownership field (defaults to creator)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     # Calendar/scheduling field
     scheduled_publish_at = Column(DateTime, nullable=True, index=True)
 
@@ -37,4 +50,10 @@ class Content(Base):
 
     publish_records = relationship("PublishRecord", back_populates="content", cascade="all, delete-orphan")
     community = relationship("Community", back_populates="contents")
-    creator = relationship("User", back_populates="created_contents")
+    creator = relationship("User", foreign_keys=[created_by_user_id], back_populates="created_contents")
+    owner = relationship("User", foreign_keys=[owner_id], back_populates="owned_contents")
+    collaborators = relationship(
+        "User",
+        secondary="content_collaborators",
+        back_populates="collaborated_contents",
+    )

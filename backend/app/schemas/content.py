@@ -41,6 +41,10 @@ class ContentOut(BaseModel):
     category: str
     cover_image: Optional[str]
     status: str
+    community_id: int
+    created_by_user_id: Optional[int]
+    owner_id: Optional[int]
+    scheduled_publish_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
 
