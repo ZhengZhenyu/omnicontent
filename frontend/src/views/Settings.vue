@@ -18,7 +18,14 @@
                 <el-input v-model="ch.config.app_id" placeholder="微信公众号 AppID" />
               </el-form-item>
               <el-form-item label="AppSecret">
-                <el-input v-model="ch.config.app_secret" type="password" show-password placeholder="微信公众号 AppSecret" />
+                <el-input
+                  v-model="ch.config.app_secret"
+                  type="password"
+                  show-password
+                  placeholder="微信公众号 AppSecret"
+                  @focus="handleSecretFocus(ch, 'app_secret')"
+                />
+                <div v-if="isSecretMasked(ch.config.app_secret)" class="secret-hint">已配置，留空则保持不变</div>
               </el-form-item>
             </el-form>
           </template>
@@ -60,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getChannelConfigs, updateChannelConfig } from '../api/publish'
 
@@ -78,6 +85,18 @@ const channelList = ref<ChannelItem[]>([
   { key: 'zhihu', label: '知乎', enabled: false, config: {} },
 ])
 
+/** Check if a value is a masked placeholder from backend */
+function isSecretMasked(val: string): boolean {
+  return !!val && val.startsWith('••••')
+}
+
+/** Clear masked value on focus so user can type a new one */
+function handleSecretFocus(ch: ChannelItem, field: string) {
+  if (isSecretMasked(ch.config[field])) {
+    ch.config[field] = ''
+  }
+}
+
 onMounted(async () => {
   try {
     const configs = await getChannelConfigs()
@@ -92,9 +111,27 @@ onMounted(async () => {
 })
 
 async function handleSave(ch: ChannelItem) {
+  // Build the config to send — skip masked values (means user didn't change them)
+  const configToSend: Record<string, string> = {}
+  for (const [k, v] of Object.entries(ch.config)) {
+    if (!isSecretMasked(v)) {
+      configToSend[k] = v
+    }
+    // If masked, simply don't include it — backend will keep existing value
+  }
+
   try {
-    await updateChannelConfig(ch.key, { config: ch.config, enabled: ch.enabled })
+    await updateChannelConfig(ch.key, { config: configToSend, enabled: ch.enabled })
     ElMessage.success(`${ch.label} 配置已保存`)
+    // Reload to get updated masked values
+    const configs = await getChannelConfigs()
+    for (const cfg of configs) {
+      const item = channelList.value.find(c => c.key === cfg.channel)
+      if (item) {
+        item.enabled = cfg.enabled
+        item.config = { ...item.config, ...cfg.config }
+      }
+    }
   } catch {
     ElMessage.error('保存失败')
   }
@@ -113,4 +150,5 @@ async function handleToggle(ch: ChannelItem) {
 .settings h2 { margin: 0 0 20px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
 .hint-text { color: #999; font-size: 13px; }
+.secret-hint { color: #909399; font-size: 12px; margin-top: 4px; }
 </style>

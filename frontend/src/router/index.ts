@@ -12,6 +12,24 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
+      path: '/initial-setup',
+      name: 'InitialSetup',
+      component: () => import('../views/InitialSetup.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/forgot-password',
+      name: 'ForgotPassword',
+      component: () => import('../views/ForgotPassword.vue'),
+      meta: { requiresAuth: false },
+    },
+    {
+      path: '/reset-password',
+      name: 'ResetPassword',
+      component: () => import('../views/ResetPassword.vue'),
+      meta: { requiresAuth: false },
+    },
+    {
       path: '/',
       name: 'Dashboard',
       component: () => import('../views/Dashboard.vue'),

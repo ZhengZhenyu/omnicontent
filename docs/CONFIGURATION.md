@@ -19,7 +19,7 @@ APP_NAME=OmniContent
 DEBUG=False
 
 # 数据库配置
-DATABASE_URL=sqlite:///./content_hub.db
+DATABASE_URL=sqlite:///./omnicontent.db
 
 # JWT 认证配置
 JWT_SECRET_KEY=your-super-secret-key-change-me-in-production
@@ -35,7 +35,7 @@ CORS_ORIGINS=["http://localhost:3000"]
 #### 开发环境 (SQLite)
 
 ```env
-DATABASE_URL=sqlite:///./content_hub.db
+DATABASE_URL=sqlite:///./omnicontent.db
 ```
 
 #### 生产环境 (PostgreSQL)
@@ -270,7 +270,7 @@ BACKUP_DIR=/path/to/backups
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # 备份数据库
-cp backend/content_hub.db $BACKUP_DIR/content_hub_$DATE.db
+cp backend/omnicontent.db $BACKUP_DIR/omnicontent_$DATE.db
 
 # 备份上传文件
 tar -czf $BACKUP_DIR/uploads_$DATE.tar.gz backend/uploads/

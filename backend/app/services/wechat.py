@@ -5,8 +5,6 @@ import httpx
 import markdown
 from bs4 import BeautifulSoup
 
-from app.config import settings
-
 # WeChat-compatible inline styles
 WECHAT_STYLES = {
     "h1": "font-size:22px;font-weight:bold;color:#1a1a1a;margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid #eee;",
@@ -27,26 +25,62 @@ WECHAT_STYLES = {
     "hr": "border:none;border-top:1px solid #eee;margin:20px 0;",
 }
 
+# WeChat API base URL (public, not a secret)
+WECHAT_API_BASE = "https://api.weixin.qq.com"
+
 
 class WechatService:
     def __init__(self):
-        self.app_id = settings.WECHAT_APP_ID
-        self.app_secret = settings.WECHAT_APP_SECRET
-        self.api_base = settings.WECHAT_API_BASE
         self._access_token = None
         self._token_expires = 0
+        self._app_id = None
+        self._app_secret = None
 
-    async def _get_access_token(self) -> str:
+    def _load_credentials(self, community_id: int) -> tuple[str, str]:
+        """Load WeChat credentials from the database for a given community."""
+        from app.database import SessionLocal
+        from app.models.channel import ChannelConfig
+        from app.core.security import decrypt_value
+
+        db = SessionLocal()
+        try:
+            cfg = db.query(ChannelConfig).filter(
+                ChannelConfig.community_id == community_id,
+                ChannelConfig.channel == "wechat",
+            ).first()
+            if not cfg or not cfg.config:
+                raise ValueError("微信公众号未配置。请在渠道设置中配置 AppID 和 AppSecret。")
+            config = cfg.config
+            app_id = config.get("app_id", "")
+            app_secret_enc = config.get("app_secret", "")
+            if not app_id or not app_secret_enc:
+                raise ValueError("微信公众号 AppID 或 AppSecret 未配置。")
+            app_secret = decrypt_value(app_secret_enc)
+            return app_id, app_secret
+        finally:
+            db.close()
+
+    async def _get_access_token(self, community_id: int) -> str:
+        """Get a valid access token, refreshing if needed."""
+        app_id, app_secret = self._load_credentials(community_id)
+
+        # Invalidate cache if credentials changed
+        if app_id != self._app_id or app_secret != self._app_secret:
+            self._access_token = None
+            self._token_expires = 0
+            self._app_id = app_id
+            self._app_secret = app_secret
+
         if self._access_token and time.time() < self._token_expires:
             return self._access_token
 
         async with httpx.AsyncClient() as client:
             resp = await client.get(
-                f"{self.api_base}/cgi-bin/token",
+                f"{WECHAT_API_BASE}/cgi-bin/token",
                 params={
                     "grant_type": "client_credential",
-                    "appid": self.app_id,
-                    "secret": self.app_secret,
+                    "appid": app_id,
+                    "secret": app_secret,
                 },
             )
             data = resp.json()
@@ -88,13 +122,13 @@ class WechatService:
 
         return str(soup)
 
-    async def upload_image(self, image_path: str) -> str:
+    async def upload_image(self, image_path: str, community_id: int) -> str:
         """Upload an image for use inside article body. Returns a WeChat URL."""
-        token = await self._get_access_token()
+        token = await self._get_access_token(community_id)
         async with httpx.AsyncClient() as client:
             with open(image_path, "rb") as f:
                 resp = await client.post(
-                    f"{self.api_base}/cgi-bin/media/uploadimg",
+                    f"{WECHAT_API_BASE}/cgi-bin/media/uploadimg",
                     params={"access_token": token},
                     files={"media": f},
                 )
@@ -103,14 +137,14 @@ class WechatService:
                 raise Exception(f"Failed to upload image: {data}")
             return data["url"]
 
-    async def upload_thumb_media(self, image_path: str) -> str:
+    async def upload_thumb_media(self, image_path: str, community_id: int) -> str:
         """Upload a permanent thumb image and return media_id for use as cover."""
-        token = await self._get_access_token()
+        token = await self._get_access_token(community_id)
         filename = os.path.basename(image_path)
         async with httpx.AsyncClient() as client:
             with open(image_path, "rb") as f:
                 resp = await client.post(
-                    f"{self.api_base}/cgi-bin/material/add_material",
+                    f"{WECHAT_API_BASE}/cgi-bin/material/add_material",
                     params={"access_token": token, "type": "image"},
                     files={"media": (filename, f, "image/png")},
                 )
@@ -119,9 +153,9 @@ class WechatService:
                 raise Exception(f"Failed to upload thumb media: {data}")
             return data["media_id"]
 
-    async def create_draft(self, title: str, content_html: str, author: str = "", thumb_media_id: str = "") -> dict:
+    async def create_draft(self, title: str, content_html: str, author: str = "", thumb_media_id: str = "", community_id: int = 0) -> dict:
         """Create a draft article in WeChat Official Account."""
-        token = await self._get_access_token()
+        token = await self._get_access_token(community_id)
 
         article = {
             "title": title,
@@ -135,7 +169,7 @@ class WechatService:
 
         async with httpx.AsyncClient() as client:
             resp = await client.post(
-                f"{self.api_base}/cgi-bin/draft/add",
+                f"{WECHAT_API_BASE}/cgi-bin/draft/add",
                 params={"access_token": token},
                 json={"articles": [article]},
             )
@@ -144,12 +178,12 @@ class WechatService:
                 raise Exception(f"Failed to create draft: {data}")
             return {"media_id": data["media_id"], "status": "draft"}
 
-    async def get_article_stats(self, publish_id: str) -> dict:
+    async def get_article_stats(self, publish_id: str, community_id: int = 0) -> dict:
         """Get article statistics (limited for subscription accounts)."""
-        token = await self._get_access_token()
+        token = await self._get_access_token(community_id)
         async with httpx.AsyncClient() as client:
             resp = await client.post(
-                f"{self.api_base}/cgi-bin/datacube/getarticlesummary",
+                f"{WECHAT_API_BASE}/cgi-bin/datacube/getarticlesummary",
                 params={"access_token": token},
                 json={"begin_date": "", "end_date": ""},
             )

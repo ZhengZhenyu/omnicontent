@@ -9,6 +9,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   access_token: string
   token_type: string
+  is_default_admin: boolean
 }
 
 export interface UserInfoResponse {
@@ -16,16 +17,29 @@ export interface UserInfoResponse {
   communities: Community[]
 }
 
-export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-  const formData = new FormData()
-  formData.append('username', credentials.username)
-  formData.append('password', credentials.password)
+export interface SystemStatusResponse {
+  needs_setup: boolean
+  message: string
+}
 
-  const { data } = await apiClient.post<LoginResponse>('/auth/login', formData, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-  })
+export interface InitialSetupRequest {
+  username: string
+  email: string
+  password: string
+  full_name?: string
+}
+
+export interface PasswordResetRequestData {
+  email: string
+}
+
+export interface PasswordResetConfirmData {
+  token: string
+  new_password: string
+}
+
+export async function login(credentials: LoginRequest): Promise<LoginResponse> {
+  const { data } = await apiClient.post<LoginResponse>('/auth/login', credentials)
   return data
 }
 
@@ -41,5 +55,25 @@ export async function register(userData: {
   full_name?: string
 }): Promise<User> {
   const { data } = await apiClient.post<User>('/auth/register', userData)
+  return data
+}
+
+export async function getSystemStatus(): Promise<SystemStatusResponse> {
+  const { data } = await apiClient.get<SystemStatusResponse>('/auth/status')
+  return data
+}
+
+export async function initialSetup(setupData: InitialSetupRequest): Promise<LoginResponse> {
+  const { data } = await apiClient.post<LoginResponse>('/auth/setup', setupData)
+  return data
+}
+
+export async function requestPasswordReset(email: string): Promise<{ message: string; reset_url?: string; token?: string }> {
+  const { data } = await apiClient.post('/auth/password-reset/request', { email })
+  return data
+}
+
+export async function confirmPasswordReset(token: string, new_password: string): Promise<{ message: string }> {
+  const { data } = await apiClient.post('/auth/password-reset/confirm', { token, new_password })
   return data
 }

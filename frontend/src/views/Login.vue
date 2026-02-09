@@ -50,10 +50,8 @@
         </el-form-item>
       </el-form>
 
-      <div class="login-tip">
-        <el-text type="info" size="small">
-          默认管理员账号: admin / admin123
-        </el-text>
+      <div class="login-links">
+        <router-link to="/forgot-password" class="forgot-link">忘记密码？</router-link>
       </div>
     </el-card>
   </div>
@@ -100,6 +98,13 @@ const handleLogin = async () => {
     // Step 1: Login and get token
     const loginResponse = await login(loginForm)
     authStore.setToken(loginResponse.access_token)
+
+    // Check if this is the default admin - redirect to initial setup
+    if (loginResponse.is_default_admin) {
+      ElMessage.warning('请先完成系统初始化设置')
+      router.push('/initial-setup')
+      return
+    }
 
     // Step 2: Fetch user info and communities
     const userInfo = await getUserInfo()
@@ -181,10 +186,18 @@ const handleLogin = async () => {
   }
 }
 
-.login-tip {
-  margin-top: 24px;
-  text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #ebeef5;
+.login-links {
+  margin-top: 16px;
+  text-align: right;
+
+  .forgot-link {
+    color: #409eff;
+    text-decoration: none;
+    font-size: 13px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 </style>

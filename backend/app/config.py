@@ -5,26 +5,35 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     APP_NAME: str = "OmniContent"
-    DEBUG: bool = True
+    DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "sqlite:///./content_hub.db"
+    DATABASE_URL: str = "sqlite:///./omnicontent.db"
+
+    # Default admin account (seeded on first run)
+    DEFAULT_ADMIN_USERNAME: str = "admin"
+    DEFAULT_ADMIN_PASSWORD: str = "admin123"
+    DEFAULT_ADMIN_EMAIL: str = "admin@example.com"
+
+    # JWT
+    JWT_SECRET_KEY: str = "change-me-in-production-please-use-a-strong-secret-key"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+
+    # Email / SMTP configuration for password recovery
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_USE_TLS: bool = True
+
+    # Frontend URL for password reset links
+    FRONTEND_URL: str = "http://localhost:5173"
 
     # File storage
     UPLOAD_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "uploads")
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50MB
-
-    # WeChat Official Account
-    WECHAT_APP_ID: str = ""
-    WECHAT_APP_SECRET: str = ""
-    WECHAT_API_BASE: str = "https://api.weixin.qq.com"
-
-    # Hugo blog
-    HUGO_REPO_PATH: str = ""
-    HUGO_CONTENT_DIR: str = "content/posts"
-
-    # CSDN (reserved)
-    CSDN_COOKIE: str = ""
 
     # Server
     HOST: str = "0.0.0.0"

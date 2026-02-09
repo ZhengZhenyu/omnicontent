@@ -28,6 +28,7 @@ class User(Base):
     full_name = Column(String(200), default="")
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)  # Superuser can access all communities
+    is_default_admin = Column(Boolean, default=False)  # Marks the seeded default admin account
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

@@ -81,32 +81,74 @@ OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理
 
 ## 🚀 快速开始
 
-### 开发环境
+### 前置条件
+
+- **Python 3.11+**
+- **Node.js 18+** / npm
+- **Make**（macOS / Linux 自带）
+
+### 1. 安装依赖
 
 ```bash
-# 1. 安装依赖并初始化
 make setup
+```
 
-# 2. 启动开发服务器
+> 该命令会：创建 Python 虚拟环境 `.venv` 并安装后端依赖 → 安装前端 npm 依赖 → 从 `.env.example` 生成 `backend/.env`。
+
+### 2. 配置环境变量
+
+编辑 `backend/.env`，按需修改以下关键项：
+
+```env
+# 数据库（默认 SQLite，生产可改为 PostgreSQL）
+DATABASE_URL=sqlite:///./omnicontent.db
+
+# JWT 密钥（⚠️ 生产环境务必修改为强随机字符串）
+JWT_SECRET_KEY=your-secret-key-change-in-production
+
+# 默认管理员账号（仅首次启动时用于初始化，见下方说明）
+DEFAULT_ADMIN_USERNAME=admin
+DEFAULT_ADMIN_PASSWORD=admin123
+DEFAULT_ADMIN_EMAIL=admin@example.com
+
+# SMTP（可选，用于密码重置邮件）
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_USER=your-email@example.com
+# SMTP_PASSWORD=your-email-password
+# SMTP_FROM_EMAIL=noreply@example.com
+```
+
+### 3. 启动开发服务器
+
+```bash
 make dev
 ```
 
-访问:
-- 前端: http://localhost:3000
-- API 文档: http://localhost:8000/docs
+访问：
+- 🖥️ **前端界面**: http://localhost:3000
+- 📖 **API 文档**: http://localhost:8000/docs
 
-默认管理员账号: `admin` / `admin123`
+### 4. 初始设置流程
 
-### 生产环境
+1. **首次登录** — 使用 `.env` 中配置的默认管理员账号登录（默认 `admin` / `admin123`）
+2. **强制创建新管理员** — 首次登录后系统会要求你创建一个正式管理员账号（设置用户名、密码、邮箱）
+3. **默认账号自动删除** — 新管理员创建成功后，默认 `admin` 账号将被自动删除，以确保安全
+4. **配置渠道凭证** — 登录后进入「设置」页面，为各社区配置发布渠道（微信 AppID/Secret、CSDN Cookie 等），所有凭证均使用 Fernet 加密存储
+
+### Docker 部署（生产环境）
 
 ```bash
 # 1. 配置环境变量
 cp backend/.env.example backend/.env
-# ⚠️ 编辑 backend/.env，修改数据库连接和 JWT 密钥
+# ⚠️ 编辑 backend/.env，务必修改 JWT_SECRET_KEY
 
-# 2. Docker 部署
+# 2. 启动服务
 docker compose up -d
 ```
+
+- 前端: http://localhost（Nginx 代理，端口 80）
+- 后端 API: http://localhost:8000
 
 ## 📚 文档
 

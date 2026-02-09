@@ -1,4 +1,8 @@
-from app.schemas.auth import LoginRequest, Token, TokenData
+from app.schemas.auth import (
+    LoginRequest, Token, TokenData,
+    InitialSetupRequest, PasswordResetRequest,
+    PasswordResetConfirm, SystemStatusResponse,
+)
 from app.schemas.user import UserCreate, UserUpdate, UserOut, UserWithCommunities, UserBase
 from app.schemas.community import (
     CommunityCreate,
@@ -16,6 +20,10 @@ __all__ = [
     "LoginRequest",
     "Token",
     "TokenData",
+    "InitialSetupRequest",
+    "PasswordResetRequest",
+    "PasswordResetConfirm",
+    "SystemStatusResponse",
     "UserCreate",
     "UserUpdate",
     "UserOut",

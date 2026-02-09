@@ -3,6 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.models.content import Content
 from app.models.publish_record import PublishRecord
@@ -14,7 +15,6 @@ from app.schemas.publish import (
 )
 import os
 
-from app.config import settings
 from app.services.wechat import wechat_service
 from app.services.hugo import hugo_service
 from app.services.csdn import csdn_service
@@ -38,12 +38,8 @@ async def publish_to_wechat(
     data: PublishRequest | None = None,
     db: Session = Depends(get_db),
 ):
-    if not settings.WECHAT_APP_ID or settings.WECHAT_APP_ID == "your_app_id":
-        raise HTTPException(
-            400,
-            "微信公众号未配置。请在 backend/.env 中设置 WECHAT_APP_ID 和 WECHAT_APP_SECRET",
-        )
     content = _get_content_or_404(content_id, db)
+    community_id = content.community_id
     wechat_html = wechat_service.convert_to_wechat_html(content.content_markdown)
 
     # Resolve thumb_media_id: explicit param > auto-upload cover_image
@@ -52,7 +48,7 @@ async def publish_to_wechat(
         cover_path = os.path.join(settings.UPLOAD_DIR, content.cover_image.lstrip("/uploads/"))
         if os.path.isfile(cover_path):
             try:
-                thumb_media_id = await wechat_service.upload_thumb_media(cover_path)
+                thumb_media_id = await wechat_service.upload_thumb_media(cover_path, community_id)
             except Exception as e:
                 raise HTTPException(502, f"封面图上传失败: {e}")
     if not thumb_media_id:
@@ -67,7 +63,11 @@ async def publish_to_wechat(
             content_html=wechat_html,
             author=content.author,
             thumb_media_id=thumb_media_id,
+            community_id=community_id,
         )
+    except ValueError as e:
+        # Configuration errors (missing credentials)
+        raise HTTPException(400, str(e))
     except Exception as e:
         record = PublishRecord(
             content_id=content_id,
@@ -96,12 +96,8 @@ async def publish_to_wechat(
 
 @router.post("/{content_id}/hugo", response_model=PublishRecordOut, status_code=201)
 def publish_to_hugo(content_id: int, db: Session = Depends(get_db)):
-    if not settings.HUGO_REPO_PATH or settings.HUGO_REPO_PATH == "/path/to/your/hugo/repo":
-        raise HTTPException(
-            400,
-            "Hugo 博客未配置。请在 backend/.env 中设置 HUGO_REPO_PATH",
-        )
     content = _get_content_or_404(content_id, db)
+    community_id = content.community_id
 
     try:
         file_path = hugo_service.save_post(
@@ -110,8 +106,10 @@ def publish_to_hugo(content_id: int, db: Session = Depends(get_db)):
             author=content.author,
             tags=content.tags,
             category=content.category,
+            community_id=community_id,
         )
     except ValueError as e:
+        # Configuration errors (missing repo path)
         raise HTTPException(400, str(e))
     except Exception as e:
         record = PublishRecord(
