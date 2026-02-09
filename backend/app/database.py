@@ -39,15 +39,17 @@ def init_db():
 
 
 def seed_default_admin():
-    """Create the default admin account if no users exist in the database."""
+    """Create the default admin account and default community if no users exist."""
     from app.config import settings
     from app.core.security import get_password_hash
     from app.models.user import User
+    from app.models.community import Community
 
     db = SessionLocal()
     try:
         user_count = db.query(User).count()
         if user_count == 0:
+            # Create default admin
             default_admin = User(
                 username=settings.DEFAULT_ADMIN_USERNAME,
                 email=settings.DEFAULT_ADMIN_EMAIL,
@@ -58,7 +60,23 @@ def seed_default_admin():
                 is_default_admin=True,
             )
             db.add(default_admin)
+
+            # Create default community if none exists
+            community_count = db.query(Community).count()
+            if community_count == 0:
+                default_community = Community(
+                    name="Default Community",
+                    slug="default",
+                    description="Default community for content management",
+                    is_active=True,
+                )
+                db.add(default_community)
+                db.flush()  # Get IDs assigned
+                default_community.members.append(default_admin)
+
             db.commit()
             print(f"[INFO] Default admin account created: {settings.DEFAULT_ADMIN_USERNAME}")
+            if community_count == 0:
+                print("[INFO] Default community created: Default Community")
     finally:
         db.close()

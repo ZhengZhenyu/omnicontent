@@ -9,6 +9,7 @@ from app.core.security import create_access_token, verify_password, get_password
 from app.config import settings
 from app.database import get_db
 from app.models import User
+from app.models.community import Community
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
     LoginRequest, Token, UserCreate, UserWithCommunities,
@@ -124,6 +125,10 @@ def initial_setup(
         is_default_admin=False,
     )
     db.add(new_admin)
+
+    # Transfer community memberships from default admin to new admin
+    for community in current_user.communities:
+        community.members.append(new_admin)
 
     # Delete the default admin account
     db.delete(current_user)
