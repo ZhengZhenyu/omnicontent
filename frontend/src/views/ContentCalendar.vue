@@ -1,9 +1,12 @@
 <template>
   <div class="content-calendar-container">
     <!-- 顶部工具栏 -->
-    <div class="calendar-header">
+    <div class="page-title">
       <div class="header-left">
-        <h2>内容日历</h2>
+        <div>
+          <h2>内容日历</h2>
+          <p class="subtitle">可视化管理内容排期</p>
+        </div>
         <el-tag type="info" size="small" style="margin-left: 12px">
           {{ eventCount }} 条内容
         </el-tag>
@@ -41,7 +44,7 @@
       <!-- 左侧未排期内容面板 -->
       <div
         ref="unscheduledPanelRef"
-        class="unscheduled-panel"
+        class="section-card unscheduled-panel"
         :class="{ collapsed: panelCollapsed, 'drop-target-active': isDraggingOverPanel }"
         @dragover.prevent="isDraggingOverPanel = true"
         @dragleave="isDraggingOverPanel = false"
@@ -84,7 +87,7 @@
       </div>
 
       <!-- FullCalendar -->
-      <div class="calendar-main">
+      <div class="section-card calendar-main">
         <FullCalendar ref="calendarRef" :options="calendarOptions" />
       </div>
     </div>
@@ -604,34 +607,48 @@ onBeforeUnmount(() => {
   min-height: calc(100vh - 120px);
 }
 
-// ==================== 顶部工具栏 ====================
+// ==================== 页面标题 ====================
 
-.calendar-header {
+.page-title {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  background: #fff;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1d2129;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #86909c;
+    font-size: 14px;
+  }
 
   .header-left {
     display: flex;
     align-items: center;
-
-    h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: #303133;
-    }
+    gap: 12px;
   }
 
   .header-actions {
     display: flex;
     align-items: center;
   }
+}
+
+// ==================== 通用卡片样式 ====================
+
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
 }
 
 // ==================== 主体布局 ====================
@@ -647,11 +664,9 @@ onBeforeUnmount(() => {
 .unscheduled-panel {
   width: 260px;
   min-width: 260px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   overflow: hidden;
+  padding: 0;
 
   &.drop-target-active {
     background: #ecf5ff;
@@ -761,10 +776,6 @@ onBeforeUnmount(() => {
       .item-author {
         font-size: 11px;
         color: #999;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
     }
   }
 }

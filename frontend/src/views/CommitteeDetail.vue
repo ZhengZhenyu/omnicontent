@@ -9,7 +9,7 @@
         </el-button>
       </div>
 
-      <el-card class="committee-info-card">
+      <el-card class="section-card committee-info-card">
         <div class="committee-header">
           <div class="committee-title">
             <h2>{{ committee.name }}</h2>
@@ -54,7 +54,7 @@
       </el-card>
 
       <!-- Members Section -->
-      <div class="members-section">
+      <div class="section-card">
         <div class="section-header">
           <h3>委员会成员</h3>
           <el-button
@@ -425,8 +425,17 @@ function formatDate(dateStr?: string) {
   margin-bottom: 16px;
 }
 
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
 .committee-info-card {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .committee-header {

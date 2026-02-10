@@ -1,9 +1,9 @@
 <template>
   <div class="member-manage">
-    <div class="page-header">
-      <div class="header-title">
+    <div class="page-title">
+      <div>
         <h2>成员批量管理</h2>
-        <p>批量导入或导出委员会成员</p>
+        <p class="subtitle">批量导入或导出委员会成员</p>
       </div>
       <el-button @click="$router.back()">
         <el-icon><ArrowLeft /></el-icon>
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Committee Selection -->
-    <el-card class="selection-card">
+    <div class="section-card selection-card">
       <el-form :inline="true">
         <el-form-item label="选择委员会">
           <el-select
@@ -30,13 +30,13 @@
           </el-select>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
     <div v-if="selectedCommitteeId">
       <el-row :gutter="24">
         <!-- Export Section -->
         <el-col :xs="24" :md="12">
-          <el-card class="action-card">
+          <div class="section-card action-card">
             <template #header>
               <div class="card-header">
                 <el-icon class="header-icon"><Download /></el-icon>
@@ -65,12 +65,12 @@
                 导出为CSV
               </el-button>
             </div>
-          </el-card>
+          </div>
         </el-col>
 
         <!-- Import Section -->
         <el-col :xs="24" :md="12">
-          <el-card class="action-card">
+          <div class="section-card action-card">
             <template #header>
               <div class="card-header">
                 <el-icon class="header-icon"><Upload /></el-icon>
@@ -133,12 +133,12 @@
                 下载CSV模板
               </el-button>
             </div>
-          </el-card>
+          </div>
         </el-col>
       </el-row>
 
       <!-- Import Result -->
-      <el-card v-if="importResult" class="result-card">
+      <div v-if="importResult" class="section-card result-card">
         <template #header>
           <span>导入结果</span>
         </template>
@@ -179,7 +179,7 @@
             </el-button>
           </template>
         </el-result>
-      </el-card>
+      </div>
     </div>
 
     <el-empty
@@ -382,27 +382,33 @@ function getResultTitle() {
   padding: 24px;
 }
 
-.page-header {
+.page-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.header-title h2 {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
   font-weight: 600;
+  color: #1d2129;
 }
 
-.header-title p {
+.page-title .subtitle {
   margin: 0;
-  color: var(--el-text-color-secondary);
+  color: #86909c;
   font-size: 14px;
 }
 
-.selection-card {
-  margin-bottom: 24px;
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
 }
 
 .action-card {

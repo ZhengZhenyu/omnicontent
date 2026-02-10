@@ -8,8 +8,11 @@
     </el-empty>
 
     <template v-else>
-      <div class="page-header">
-        <h2>内容管理</h2>
+      <div class="page-title">
+        <div>
+          <h2>内容管理</h2>
+          <p class="subtitle">管理和组织社区内容</p>
+        </div>
         <div class="actions">
           <el-upload
             :show-file-list="false"
@@ -22,7 +25,7 @@
         </div>
       </div>
 
-      <el-card>
+      <div class="section-card filter-section">
         <div class="filters">
           <el-input v-model="keyword" placeholder="搜索标题..." clearable style="width: 240px" @clear="loadData" @keyup.enter="loadData" />
           <el-select v-model="filterStatus" placeholder="状态筛选" clearable @change="loadData" style="width: 140px">
@@ -37,7 +40,9 @@
             <el-option label="活动总结" value="event_summary" />
           </el-select>
         </div>
+      </div>
 
+      <div class="section-card">
         <el-table :data="contents" v-loading="loading" stripe>
           <el-table-column prop="title" label="标题" min-width="240">
             <template #default="{ row }">
@@ -91,7 +96,7 @@
           layout="total, prev, pager, next"
           @current-change="handlePageChange"
         />
-      </el-card>
+      </div>
     </template>
   </div>
 </template>
@@ -209,10 +214,48 @@ watch(
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; }
-.actions { display: flex; gap: 12px; }
-.filters { display: flex; gap: 12px; margin-bottom: 16px; }
-.title-link { color: #333; text-decoration: none; }
-.title-link:hover { color: #409eff; }
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1d2129;
+}
+.page-title .subtitle {
+  margin: 0;
+  color: #86909c;
+  font-size: 14px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+}
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+.filter-section {
+  padding: 16px 24px;
+}
+.filters {
+  display: flex;
+  gap: 12px;
+}
+.title-link {
+  color: #4e5969;
+  text-decoration: none;
+  font-weight: 500;
+}
+.title-link:hover {
+  color: #3b82f6;
+}
 </style>

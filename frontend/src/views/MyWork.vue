@@ -1,75 +1,92 @@
 <template>
-  <div class="my-work-container">
-    <el-card class="header-card">
-      <div class="header">
-        <div>
-          <h2><el-icon><User /></el-icon> 我的工作</h2>
-          <p class="subtitle">查看和管理我负责的所有任务</p>
-        </div>
-        <div class="stats">
-          <el-statistic title="计划中" :value="totalPlanning">
-            <template #prefix><el-icon color="#909399"><Clock /></el-icon></template>
-          </el-statistic>
-          <el-statistic title="进行中" :value="totalInProgress">
-            <template #prefix><el-icon color="#E6A23C"><Loading /></el-icon></template>
-          </el-statistic>
-          <el-statistic title="已完成" :value="totalCompleted">
-            <template #prefix><el-icon color="#67C23A"><CircleCheck /></el-icon></template>
-          </el-statistic>
-        </div>
-      </div>
-    </el-card>
+  <div class="my-work" v-loading="loading">
+    <!-- 页面标题 -->
+    <div class="page-title">
+      <h2>我的工作</h2>
+      <p class="subtitle">查看和管理我负责的所有任务</p>
+    </div>
 
-    <el-card class="filter-card">
+    <!-- 指标卡片 -->
+    <div class="metric-cards">
+      <div class="metric-card">
+        <div class="metric-value">{{ allItems.length }}</div>
+        <div class="metric-label">全部任务</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">{{ totalPlanning }}</div>
+        <div class="metric-label">计划中</div>
+      </div>
+      <div class="metric-card highlight-warning">
+        <div class="metric-value">{{ totalInProgress }}</div>
+        <div class="metric-label">进行中</div>
+      </div>
+      <div class="metric-card highlight-success">
+        <div class="metric-value">{{ totalCompleted }}</div>
+        <div class="metric-label">已完成</div>
+      </div>
+    </div>
+
+    <!-- 筛选栏 -->
+    <div class="section-card filter-section">
       <el-radio-group v-model="filterStatus" @change="loadData">
         <el-radio-button value="all">全部</el-radio-button>
         <el-radio-button value="planning">计划中</el-radio-button>
         <el-radio-button value="in_progress">进行中</el-radio-button>
         <el-radio-button value="completed">已完成</el-radio-button>
       </el-radio-group>
-      <el-radio-group v-model="filterType" class="ml20">
+      <el-radio-group v-model="filterType" style="margin-left: 16px;">
         <el-radio-button value="all">全部类型</el-radio-button>
         <el-radio-button value="content">内容</el-radio-button>
         <el-radio-button value="meeting">会议</el-radio-button>
       </el-radio-group>
-    </el-card>
+    </div>
 
-    <el-card v-loading="loading">
-      <el-empty v-if="filteredItems.length === 0" description="暂无任务" />
-      <div v-else class="items">
-        <div 
-          v-for="item in filteredItems" 
-          :key="`${item.type}-${item.id}`" 
-          class="item"
+    <!-- 任务列表 -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>任务列表</h3>
+        <span class="section-desc">共 {{ filteredItems.length }} 项</span>
+      </div>
+
+      <div v-if="filteredItems.length === 0" class="empty-hint">暂无任务</div>
+
+      <div v-else>
+        <div
+          v-for="item in filteredItems"
+          :key="`${item.type}-${item.id}`"
+          class="list-item clickable"
           @click="goToDetail(item)"
         >
-          <div class="item-header">
-            <div class="item-title">
-              <el-tag :type="item.type === 'content' ? 'primary' : 'success'" size="small">
-                {{ item.type === 'content' ? '内容' : '会议' }}
-              </el-tag>
-              <span>{{ item.title }}</span>
+          <div class="item-left">
+            <span class="stat-dot" :class="statusDotClass(item.work_status)"></span>
+            <div class="item-content">
+              <div class="item-title-row">
+                <span class="count-badge" :class="item.type === 'content' ? 'content-badge' : 'meeting-badge'">
+                  {{ item.type === 'content' ? '内容' : '会议' }}
+                </span>
+                <span class="item-title">{{ item.title }}</span>
+              </div>
+              <div class="item-meta">
+                <span>{{ item.creator_name || '未知' }}</span>
+                <span>{{ item.assignee_count }} 人参与</span>
+                <span>{{ formatDate(item.updated_at) }}</span>
+              </div>
             </div>
-            <el-select 
-              v-model="item.work_status" 
-              @change="updateStatus(item)" 
-              @click.stop
-              size="small" 
-              style="width: 120px"
-            >
-              <el-option label="计划中" value="planning" />
-              <el-option label="进行中" value="in_progress" />
-              <el-option label="已完成" value="completed" />
-            </el-select>
           </div>
-          <div class="item-meta">
-            <span><el-icon><UserFilled /></el-icon> {{ item.creator_name || '未知' }}</span>
-            <span><el-icon><User /></el-icon> {{ item.assignee_count }} 人</span>
-            <span><el-icon><Calendar /></el-icon> {{ formatDate(item.updated_at) }}</span>
-          </div>
+          <el-select
+            v-model="item.work_status"
+            @change="updateStatus(item)"
+            @click.stop
+            size="small"
+            style="width: 110px; flex-shrink: 0;"
+          >
+            <el-option label="计划中" value="planning" />
+            <el-option label="进行中" value="in_progress" />
+            <el-option label="已完成" value="completed" />
+          </el-select>
         </div>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -77,7 +94,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Clock, Loading, CircleCheck, UserFilled, Calendar } from '@element-plus/icons-vue'
 import axios from '../api'
 
 const router = useRouter()
@@ -109,17 +125,22 @@ const filteredItems = computed(() => {
   return items
 })
 
-const totalPlanning = computed(() => 
+const totalPlanning = computed(() =>
   data.value ? (data.value.content_stats.planning + data.value.meeting_stats.planning) : 0
 )
-const totalInProgress = computed(() => 
+const totalInProgress = computed(() =>
   data.value ? (data.value.content_stats.in_progress + data.value.meeting_stats.in_progress) : 0
 )
-const totalCompleted = computed(() => 
+const totalCompleted = computed(() =>
   data.value ? (data.value.content_stats.completed + data.value.meeting_stats.completed) : 0
 )
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('zh-CN')
+
+function statusDotClass(status: string) {
+  const map: Record<string, string> = { planning: 'planning', in_progress: 'in-progress', completed: 'completed' }
+  return map[status] || 'planning'
+}
 
 const loadData = async () => {
   loading.value = true
@@ -156,99 +177,60 @@ const goToDetail = (item: Item) => {
 onMounted(() => loadData())
 </script>
 
-<style scoped lang="scss">
-.my-work-container {
+<style scoped>
+.my-work {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.header-card {
-  margin-bottom: 20px;
-}
+/* Page Title */
+.page-title { margin-bottom: 24px; }
+.page-title h2 { margin: 0 0 4px; font-size: 22px; font-weight: 600; color: #1d2129; }
+.page-title .subtitle { margin: 0; color: #86909c; font-size: 14px; }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Metric Cards */
+.metric-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.metric-card { background: #fff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.metric-value { font-size: 32px; font-weight: 700; color: #1d2129; line-height: 1.2; }
+.metric-label { font-size: 13px; color: #86909c; margin-top: 4px; }
+.metric-card.highlight-warning .metric-value { color: #f59e0b; }
+.metric-card.highlight-success .metric-value { color: #10b981; }
 
-  h2 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 8px;
-  }
+/* Section Card */
+.section-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+.section-header h3 { margin: 0; font-size: 16px; font-weight: 600; color: #1d2129; }
+.section-desc { font-size: 13px; color: #86909c; }
 
-  .subtitle {
-    margin: 0;
-    color: #909399;
-  }
+/* Filter Section */
+.filter-section { display: flex; align-items: center; padding: 16px 24px; }
 
-  .stats {
-    display: flex;
-    gap: 40px;
-  }
-}
+/* List Item */
+.list-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f5f5f5; }
+.list-item:last-child { border-bottom: none; }
+.list-item.clickable { cursor: pointer; }
+.list-item.clickable:hover { background: #fafbfc; margin: 0 -24px; padding: 14px 24px; border-radius: 8px; }
 
-.filter-card {
-  margin-bottom: 20px;
+.item-left { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
 
-  :deep(.el-card__body) {
-    display: flex;
-    align-items: center;
-  }
+/* Status Dot */
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.stat-dot.planning { background: #94a3b8; }
+.stat-dot.in-progress { background: #f59e0b; }
+.stat-dot.completed { background: #10b981; }
 
-  .ml20 {
-    margin-left: 20px;
-  }
-}
+.item-content { min-width: 0; flex: 1; }
+.item-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.item-title { font-size: 14px; font-weight: 500; color: #1d2129; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.item-meta { display: flex; gap: 16px; font-size: 13px; color: #86909c; }
 
-.item {
-  padding: 16px;
-  border: 1px solid #EBEEF5;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
+/* Badges */
+.count-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.content-badge { background: #eff6ff; color: #3b82f6; }
+.meeting-badge { background: #f0fdf4; color: #22c55e; }
 
-  &:hover {
-    border-color: #409EFF;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  }
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.item-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  span {
-    font-weight: 500;
-  }
-}
-
-.item-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: #606266;
-
-  span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-}
+/* Empty */
+.empty-hint { color: #c0c4cc; text-align: center; padding: 40px 0; font-size: 14px; }
 </style>

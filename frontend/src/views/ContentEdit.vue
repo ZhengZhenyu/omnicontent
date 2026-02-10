@@ -392,15 +392,53 @@ async function handleTransferOwnership() {
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; }
-.actions { display: flex; gap: 8px; }
-.meta-card :deep(.el-form-item) { margin-bottom: 0; }
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1d2129;
+}
+.page-title .subtitle {
+  margin: 0;
+  color: #86909c;
+  font-size: 14px;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+}
 
-.collab-header {
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.meta-card :deep(.el-form-item) {
+  margin-bottom: 0;
 }
 
 .collab-add {

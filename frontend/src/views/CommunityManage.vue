@@ -1,7 +1,10 @@
 <template>
   <div class="community-manage">
-    <div class="page-header">
-      <h2>社区管理</h2>
+    <div class="page-title">
+      <div>
+        <h2>社区管理</h2>
+        <p class="subtitle">管理所有社区和成员</p>
+      </div>
       <el-button v-if="isSuperuser" type="primary" :icon="Plus" @click="showCreateDialog">新建社区</el-button>
     </div>
 
@@ -603,13 +606,25 @@ onMounted(loadCommunities)
 </script>
 
 <style scoped>
-.page-header {
+.page-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
-.page-header h2 { margin: 0; }
+
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.page-title .subtitle {
+  margin: 0;
+  color: #86909c;
+  font-size: 14px;
+}
 
 .community-card {
   margin-bottom: 20px;

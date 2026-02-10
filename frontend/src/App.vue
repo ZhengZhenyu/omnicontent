@@ -69,10 +69,20 @@
           <el-icon><OfficeBuilding /></el-icon>
           <span>社区管理</span>
         </el-menu-item>
-        <el-menu-item v-if="isSuperuser" index="/users">
-          <el-icon><UserFilled /></el-icon>
-          <span>用户管理</span>
-        </el-menu-item>
+        <el-sub-menu v-if="isSuperuser" index="people">
+          <template #title>
+            <el-icon><UserFilled /></el-icon>
+            <span>人员管理</span>
+          </template>
+          <el-menu-item index="/users">
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </el-menu-item>
+          <el-menu-item index="/workload">
+            <el-icon><TrendCharts /></el-icon>
+            <span>工作量总览</span>
+          </el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="/">
           <el-icon><DataAnalysis /></el-icon>
           <span>仪表板</span>
@@ -108,10 +118,10 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { 
-  DataAnalysis, Document, Promotion, Setting, 
-  OfficeBuilding, UserFilled, User, Stamp, DataLine, Avatar, 
-  Calendar, Upload, List, Checked 
+import {
+  DataAnalysis, Document, Promotion, Setting,
+  OfficeBuilding, UserFilled, User, Stamp, DataLine, Avatar,
+  Calendar, Upload, List, Checked, TrendCharts
 } from '@element-plus/icons-vue'
 import { useAuthStore } from './stores/auth'
 import { getUserInfo } from './api/auth'
@@ -138,6 +148,7 @@ const showCommunitySwitcher = computed(() => {
     'CommunityOverview',
     'CommunityManage',
     'UserManage',
+    'WorkloadOverview',
     'Dashboard',
     'MyWork'
   ]

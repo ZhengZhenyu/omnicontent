@@ -8,15 +8,20 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_db, get_current_user, get_current_community
-from app.models.user import User
-from app.models.content import Content
-from app.models.meeting import Meeting
+from sqlalchemy import func
+
+from app.core.dependencies import get_db, get_current_user, get_current_community, get_current_active_superuser
+from app.models.user import User, community_users
+from app.models.content import Content, content_assignees
+from app.models.meeting import Meeting, meeting_assignees
 from app.schemas.dashboard import (
     DashboardResponse,
     AssignedItem,
     WorkStatusStats,
     UpdateWorkStatusRequest,
+    ContentByTypeStats,
+    UserWorkloadItem,
+    WorkloadOverviewResponse,
 )
 
 router = APIRouter()
@@ -252,6 +257,69 @@ async def update_meeting_work_status(
         "old_status": old_status,
         "updated_at": meeting.updated_at,
     }
+
+
+@router.get("/workload-overview", response_model=WorkloadOverviewResponse)
+async def get_workload_overview(
+    current_user: User = Depends(get_current_active_superuser),
+    db: Session = Depends(get_db),
+):
+    """
+    获取所有用户的工作量总览（仅超级管理员）
+    统计每个用户的内容和会议数量，按状态和类别分组
+    """
+    # 获取所有非默认管理员用户
+    users = (
+        db.query(User)
+        .filter(User.is_default_admin == False)  # noqa: E712
+        .order_by(User.id)
+        .all()
+    )
+
+    result = []
+    for user in users:
+        # 获取用户负责的内容
+        assigned_contents = (
+            db.query(Content)
+            .join(Content.assignees)
+            .filter(User.id == user.id)
+            .all()
+        )
+
+        # 获取用户负责的会议
+        assigned_meetings = (
+            db.query(Meeting)
+            .join(Meeting.assignees)
+            .filter(User.id == user.id)
+            .all()
+        )
+
+        # 内容按 work_status 统计
+        content_stats = _calculate_work_status_stats(assigned_contents)
+
+        # 会议按 status 统计（映射到 work_status）
+        meeting_stats = _calculate_work_status_stats(assigned_meetings)
+
+        # 内容按 source_type 统计
+        type_stats = {"contribution": 0, "release_note": 0, "event_summary": 0}
+        for content in assigned_contents:
+            st = content.source_type or "contribution"
+            if st in type_stats:
+                type_stats[st] += 1
+
+        total = len(assigned_contents) + len(assigned_meetings)
+
+        result.append(UserWorkloadItem(
+            user_id=user.id,
+            username=user.username,
+            full_name=user.full_name,
+            content_stats=content_stats,
+            meeting_stats=meeting_stats,
+            content_by_type=ContentByTypeStats(**type_stats),
+            total=total,
+        ))
+
+    return WorkloadOverviewResponse(users=result)
 
 
 def _calculate_work_status_stats(items) -> WorkStatusStats:

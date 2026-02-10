@@ -22,53 +22,70 @@
 
     <!-- Normal dashboard -->
     <div v-else>
-      <h2>仪表板</h2>
+      <div class="page-title">
+        <h2>仪表板</h2>
+        <p class="subtitle">社区内容与发布数据概览</p>
+      </div>
 
-      <el-row :gutter="20" class="stats-row">
-        <el-col :span="8">
-          <el-card shadow="hover">
-            <template #header>内容总数</template>
-            <div class="stat-number">{{ overview.total_contents }}</div>
-          </el-card>
-        </el-col>
-        <el-col :span="8">
-          <el-card shadow="hover">
-            <template #header>已发布</template>
-            <div class="stat-number">{{ overview.total_published }}</div>
-          </el-card>
-        </el-col>
-        <el-col :span="8">
-          <el-card shadow="hover">
-            <template #header>渠道覆盖</template>
-            <div class="stat-number">{{ Object.keys(overview.channels).length }}</div>
-          </el-card>
-        </el-col>
-      </el-row>
+      <!-- 指标卡片 -->
+      <div class="metric-cards">
+        <div class="metric-card">
+          <div class="metric-value">{{ overview.total_contents }}</div>
+          <div class="metric-label">内容总数</div>
+        </div>
+        <div class="metric-card highlight-success">
+          <div class="metric-value">{{ overview.total_published }}</div>
+          <div class="metric-label">已发布</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">{{ Object.keys(overview.channels).length }}</div>
+          <div class="metric-label">渠道覆盖</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">{{ recentContents.length }}</div>
+          <div class="metric-label">最近更新</div>
+        </div>
+      </div>
 
-      <el-row :gutter="20" style="margin-top: 20px">
-        <el-col :span="12">
-          <el-card>
-            <template #header>各渠道发布统计</template>
-            <div v-if="Object.keys(overview.channels).length === 0" class="empty-hint">暂无发布记录</div>
-            <div v-else>
-              <div v-for="(count, channel) in overview.channels" :key="channel" class="channel-stat">
-                <el-tag :type="channelTagType(channel as string)">{{ channelLabel(channel as string) }}</el-tag>
-                <span class="channel-count">{{ count }} 篇</span>
+      <!-- 内容区域 -->
+      <div class="content-grid">
+        <!-- 各渠道发布统计 -->
+        <div class="section-card">
+          <div class="section-header">
+            <h3>各渠道发布统计</h3>
+            <span class="section-desc">按发布渠道分类</span>
+          </div>
+          <div v-if="Object.keys(overview.channels).length === 0" class="empty-hint">
+            <span>暂无发布记录</span>
+          </div>
+          <div v-else>
+            <div v-for="(count, channel) in overview.channels" :key="channel" class="list-item">
+              <div class="channel-info">
+                <span class="channel-dot" :class="channelDotClass(channel as string)"></span>
+                <span class="item-title">{{ channelLabel(channel as string) }}</span>
               </div>
+              <span class="count-badge content-badge">{{ count }} 篇</span>
             </div>
-          </el-card>
-        </el-col>
-        <el-col :span="12">
-          <el-card>
-            <template #header>最近内容</template>
-            <div v-if="recentContents.length === 0" class="empty-hint">暂无内容</div>
-            <div v-for="item in recentContents" :key="item.id" class="recent-item">
-              <router-link :to="`/contents/${item.id}/edit`" class="recent-title">{{ item.title }}</router-link>
-              <el-tag size="small" :type="statusType(item.status)">{{ statusLabel(item.status) }}</el-tag>
+          </div>
+        </div>
+
+        <!-- 最近内容 -->
+        <div class="section-card">
+          <div class="section-header">
+            <h3>最近内容</h3>
+            <span class="section-desc">最新 5 条内容</span>
+          </div>
+          <div v-if="recentContents.length === 0" class="empty-hint">
+            <span>暂无内容</span>
+          </div>
+          <div v-else>
+            <div v-for="item in recentContents" :key="item.id" class="list-item">
+              <router-link :to="`/contents/${item.id}/edit`" class="item-title link">{{ item.title }}</router-link>
+              <span class="status-tag" :class="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -88,7 +105,6 @@ const overview = ref<AnalyticsOverview>({ total_contents: 0, total_published: 0,
 const recentContents = ref<ContentListItem[]>([])
 
 onMounted(async () => {
-  // Fetch user info if not already loaded
   if (!authStore.user) {
     try {
       const userInfo = await getUserInfo()
@@ -99,13 +115,11 @@ onMounted(async () => {
     }
   }
 
-  // Load data when a community is selected
   if (communityStore.currentCommunityId) {
     await loadDashboardData()
   }
 })
 
-// Watch for community changes
 watch(
   () => communityStore.currentCommunityId,
   async (newId) => {
@@ -130,9 +144,9 @@ function channelLabel(ch: string) {
   return map[ch] || ch
 }
 
-function channelTagType(ch: string) {
-  const map: Record<string, string> = { wechat: 'success', hugo: '', csdn: 'warning', zhihu: 'info' }
-  return (map[ch] || '') as any
+function channelDotClass(ch: string) {
+  const map: Record<string, string> = { wechat: 'dot-success', hugo: 'dot-primary', csdn: 'dot-warning', zhihu: 'dot-info' }
+  return map[ch] || 'dot-primary'
 }
 
 function statusLabel(s: string) {
@@ -140,21 +154,68 @@ function statusLabel(s: string) {
   return map[s] || s
 }
 
-function statusType(s: string) {
-  const map: Record<string, string> = { draft: 'info', reviewing: 'warning', approved: 'success', published: '' }
-  return (map[s] || 'info') as any
+function statusClass(s: string) {
+  const map: Record<string, string> = { draft: 'status-planning', reviewing: 'status-in-progress', approved: 'status-completed', published: 'status-primary' }
+  return map[s] || 'status-planning'
 }
 </script>
 
 <style scoped>
-.dashboard h2 { margin: 0 0 20px; }
-.stat-number { font-size: 36px; font-weight: bold; color: #409eff; text-align: center; padding: 10px 0; }
-.channel-stat { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-.channel-count { font-size: 16px; font-weight: 500; }
-.recent-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-.recent-title { color: #333; text-decoration: none; }
-.recent-title:hover { color: #409eff; }
-.empty-hint { color: #999; text-align: center; padding: 20px 0; }
+.dashboard {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Page Title */
+.page-title { margin-bottom: 24px; }
+.page-title h2 { margin: 0 0 4px; font-size: 22px; font-weight: 600; color: #1d2129; }
+.page-title .subtitle { margin: 0; color: #86909c; font-size: 14px; }
+
+/* Metric Cards */
+.metric-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.metric-card { background: #fff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.metric-value { font-size: 32px; font-weight: 700; color: #1d2129; line-height: 1.2; }
+.metric-label { font-size: 13px; color: #86909c; margin-top: 4px; }
+.metric-card.highlight-success .metric-value { color: #10b981; }
+
+/* Content Grid */
+.content-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+/* Section Card */
+.section-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+.section-header h3 { margin: 0; font-size: 16px; font-weight: 600; color: #1d2129; }
+.section-desc { font-size: 13px; color: #86909c; }
+
+/* List Item */
+.list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+.list-item:last-child { border-bottom: none; }
+
+.channel-info { display: flex; align-items: center; gap: 10px; }
+.channel-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.channel-dot.dot-success { background: #10b981; }
+.channel-dot.dot-primary { background: #3b82f6; }
+.channel-dot.dot-warning { background: #f59e0b; }
+.channel-dot.dot-info { background: #94a3b8; }
+
+.item-title { font-size: 14px; font-weight: 500; color: #4e5969; }
+.item-title.link { text-decoration: none; cursor: pointer; }
+.item-title.link:hover { color: #3b82f6; }
+
+/* Count Badge */
+.count-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.content-badge { background: #eff6ff; color: #3b82f6; }
+
+/* Status Tag */
+.status-tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.status-planning { background: #f7f8fa; color: #94a3b8; }
+.status-in-progress { background: #fef3c7; color: #d97706; }
+.status-completed { background: #f0fdf4; color: #22c55e; }
+.status-primary { background: #eff6ff; color: #3b82f6; }
+
+/* Empty States */
+.empty-hint { color: #c0c4cc; text-align: center; padding: 40px 0; font-size: 14px; }
 .empty-state { display: flex; justify-content: center; align-items: center; min-height: 400px; }
-.empty-tip { color: #909399; font-size: 14px; margin: 8px 0 16px; }
+.empty-tip { color: #86909c; font-size: 14px; margin: 8px 0 16px; }
 </style>
