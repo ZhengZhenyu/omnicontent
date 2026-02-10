@@ -219,3 +219,5 @@ async function handleToggle(ch: ChannelItem) {
   color: #909399;
   font-size: 12px;
   margin-top: 4px;
+}
+</style>

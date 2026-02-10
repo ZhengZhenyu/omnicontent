@@ -124,7 +124,7 @@
           <el-form-item label="通知邮箱" prop="notification_email">
             <el-input
               v-model="form.notification_email"
-              placeholder="用于接收会议通知的邮箱"
+              placeholder="用于发送通知的邮箱"
             />
           </el-form-item>
 

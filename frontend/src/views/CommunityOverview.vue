@@ -214,11 +214,12 @@ function canManageCommunity(community: Community): boolean {
 }
 
 function viewCommunity(communityId: number) {
-  // 切换到该社区并跳转到仪表板
+  // 切换到该社区并跳转到治理概览
   const community = communities.value.find(c => c.id === communityId)
   if (community) {
-    // TODO: 实现社区详情页或切换社区
-    ElMessage.info('社区详情页待实现')
+    // 设置当前社区ID并跳转到治理概览
+    localStorage.setItem('current_community_id', String(communityId))
+    router.push('/governance')
   }
 }
 

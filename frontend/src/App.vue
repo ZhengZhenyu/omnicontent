@@ -18,10 +18,6 @@
         text-color="#bbb"
         active-text-color="#409eff"
       >
-        <el-menu-item index="/">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>仪表板</span>
-        </el-menu-item>
         <el-menu-item index="/community-overview">
           <el-icon><OfficeBuilding /></el-icon>
           <span>社区总览</span>
@@ -67,6 +63,10 @@
         <el-menu-item v-if="isSuperuser" index="/users">
           <el-icon><UserFilled /></el-icon>
           <span>用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="/">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>仪表板</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
