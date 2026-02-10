@@ -370,11 +370,11 @@ async function submitMemberForm() {
           organization: memberForm.value.organization,
           roles: memberForm.value.roles,
           email: memberForm.value.email,
-          phone: memberForm.value.phone,
-          wechat: memberForm.value.wechat,
-          term_start: memberForm.value.term_start,
-          term_end: memberForm.value.term_end,
-          bio: memberForm.value.bio,
+          phone: memberForm.value.phone || undefined,
+          wechat: memberForm.value.wechat || undefined,
+          term_start: memberForm.value.term_start || undefined,
+          term_end: memberForm.value.term_end || undefined,
+          bio: memberForm.value.bio || undefined,
           is_active: memberForm.value.is_active
         }
         await updateCommitteeMember(committee.value.id, editingMember.value.id, updateData)
@@ -385,11 +385,11 @@ async function submitMemberForm() {
           organization: memberForm.value.organization,
           roles: memberForm.value.roles,
           email: memberForm.value.email,
-          phone: memberForm.value.phone,
-          wechat: memberForm.value.wechat,
-          term_start: memberForm.value.term_start,
-          term_end: memberForm.value.term_end,
-          bio: memberForm.value.bio
+          phone: memberForm.value.phone || undefined,
+          wechat: memberForm.value.wechat || undefined,
+          term_start: memberForm.value.term_start || undefined,
+          term_end: memberForm.value.term_end || undefined,
+          bio: memberForm.value.bio || undefined
         }
         await createCommitteeMember(committee.value.id, createData)
         ElMessage.success('添加成功')
