@@ -20,6 +20,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     password: Optional[str] = Field(None, min_length=6, max_length=100)
     is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
 
 
 class UserOut(UserBase):

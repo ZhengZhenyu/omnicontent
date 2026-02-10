@@ -164,6 +164,9 @@ const handleLogin = async () => {
     height: auto;
     margin: 0 auto 16px;
     display: block;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 8px;
   }
 
   h2 {
