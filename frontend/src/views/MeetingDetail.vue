@@ -10,7 +10,7 @@
       </div>
 
       <!-- Meeting Info Card -->
-      <el-card class="meeting-info-card">
+      <div class="section-card meeting-info-card">
         <div class="meeting-header">
           <div class="meeting-title-section">
             <h2>{{ meeting.title }}</h2>
@@ -70,18 +70,18 @@
             {{ meeting.committee_name }}
           </el-link>
         </div>
-      </el-card>
+      </div>
 
       <!-- Agenda Section -->
-      <el-card v-if="meeting.agenda" class="section-card">
+      <div v-if="meeting.agenda" class="section-card">
         <template #header>
           <span class="section-title">会议议程</span>
         </template>
         <div class="agenda-content" v-html="formatAgenda(meeting.agenda)"></div>
-      </el-card>
+      </div>
 
       <!-- Minutes Section -->
-      <el-card class="section-card">
+      <div class="section-card">
         <template #header>
           <div class="section-header">
             <span class="section-title">会议纪要</span>
@@ -116,10 +116,10 @@
             </el-button>
           </div>
         </div>
-      </el-card>
+      </div>
 
       <!-- Reminders Section -->
-      <el-card v-if="isAdmin" class="section-card">
+      <div v-if="isAdmin" class="section-card">
         <template #header>
           <div class="section-header">
             <span class="section-title">会议提醒</span>
@@ -160,7 +160,7 @@
         </el-table>
 
         <el-empty v-if="reminders.length === 0" description="暂无提醒" :image-size="80" />
-      </el-card>
+      </div>
     </div>
 
     <!-- Reminder Dialog -->
@@ -452,7 +452,12 @@ function getReminderTypeText(type: string) {
 }
 
 .section-card {
-  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
 }
 
 .section-header {

@@ -53,3 +53,26 @@ class AssigneeResponse(BaseModel):
     full_name: str
     email: str
     assigned_at: datetime
+
+
+class ContentByTypeStats(BaseModel):
+    """按内容类型统计"""
+    contribution: int = 0
+    release_note: int = 0
+    event_summary: int = 0
+
+
+class UserWorkloadItem(BaseModel):
+    """单个用户的工作量数据"""
+    user_id: int
+    username: str
+    full_name: Optional[str] = None
+    content_stats: WorkStatusStats
+    meeting_stats: WorkStatusStats
+    content_by_type: ContentByTypeStats
+    total: int
+
+
+class WorkloadOverviewResponse(BaseModel):
+    """工作量总览响应"""
+    users: List[UserWorkloadItem]

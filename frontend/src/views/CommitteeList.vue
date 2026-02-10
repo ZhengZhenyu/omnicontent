@@ -8,10 +8,10 @@
     </el-empty>
 
     <template v-else>
-      <div class="page-header">
-        <div class="header-title">
+      <div class="page-title">
+        <div>
           <h2>委员会管理</h2>
-          <p>管理社区的各类委员会及其成员</p>
+          <p class="subtitle">管理社区的各类委员会及其成员</p>
         </div>
         <el-button
           v-if="isAdmin"
@@ -23,7 +23,7 @@
         </el-button>
       </div>
 
-      <div class="filter-bar">
+      <div class="section-card filter-section">
         <el-radio-group v-model="filterActive" @change="loadCommittees">
           <el-radio-button :value="undefined">全部</el-radio-button>
           <el-radio-button :value="true">活跃</el-radio-button>
@@ -330,27 +330,37 @@ async function submitForm() {
   padding: 24px;
 }
 
-.page-header {
+.page-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.header-title h2 {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
   font-weight: 600;
+  color: #1d2129;
 }
 
-.header-title p {
+.page-title .subtitle {
   margin: 0;
-  color: var(--el-text-color-secondary);
+  color: #86909c;
   font-size: 14px;
 }
 
-.filter-bar {
-  margin-bottom: 24px;
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.filter-section {
+  padding: 16px 24px;
 }
 
 .committee-grid {

@@ -96,6 +96,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresSuperuser: true },
     },
     {
+      path: '/workload',
+      name: 'WorkloadOverview',
+      component: () => import('../views/WorkloadOverview.vue'),
+      meta: { requiresAuth: true, requiresSuperuser: true },
+    },
+    {
       path: '/committees',
       name: 'CommitteeList',
       component: () => import('../views/CommitteeList.vue'),

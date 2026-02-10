@@ -1,114 +1,92 @@
 <template>
   <div class="community-overview">
-    <div class="page-header">
-      <h2>社区总览</h2>
+    <!-- 页面标题 -->
+    <div class="page-title-row">
+      <div class="page-title">
+        <h2>社区总览</h2>
+        <p class="subtitle">查看所有社区的运营概况</p>
+      </div>
       <el-button v-if="isSuperuser" type="primary" :icon="Plus" @click="$router.push('/communities')">
         管理社区
       </el-button>
     </div>
 
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <el-icon class="stat-icon" :size="40" color="#409eff"><OfficeBuilding /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ totalCommunities }}</div>
-              <div class="stat-label">社区总数</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <el-icon class="stat-icon" :size="40" color="#67c23a"><Document /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ totalContents }}</div>
-              <div class="stat-label">内容总数</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <el-icon class="stat-icon" :size="40" color="#e6a23c"><Avatar /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ totalCommittees }}</div>
-              <div class="stat-label">委员会总数</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <el-icon class="stat-icon" :size="40" color="#f56c6c"><Promotion /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ totalPublishes }}</div>
-              <div class="stat-label">发布总数</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <!-- 指标卡片 -->
+    <div class="metric-cards">
+      <div class="metric-card">
+        <div class="metric-value">{{ totalCommunities }}</div>
+        <div class="metric-label">社区总数</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">{{ totalContents }}</div>
+        <div class="metric-label">内容总数</div>
+      </div>
+      <div class="metric-card highlight-warning">
+        <div class="metric-value">{{ totalCommittees }}</div>
+        <div class="metric-label">委员会总数</div>
+      </div>
+      <div class="metric-card highlight-success">
+        <div class="metric-value">{{ totalPublishes }}</div>
+        <div class="metric-label">发布总数</div>
+      </div>
+    </div>
 
-    <el-card class="communities-card">
-      <template #header>
-        <div class="card-header">
-          <span>社区列表</span>
-          <el-input
-            v-model="searchQuery"
-            placeholder="搜索社区名称或标识"
-            :prefix-icon="Search"
-            style="width: 300px"
-            clearable
-          />
-        </div>
-      </template>
+    <!-- 社区表格 -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>社区列表</h3>
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索社区名称或标识"
+          :prefix-icon="Search"
+          style="width: 280px"
+          clearable
+        />
+      </div>
 
-      <el-table :data="filteredCommunities" stripe style="width: 100%" v-loading="loading">
+      <el-table :data="filteredCommunities" style="width: 100%" v-loading="loading">
         <el-table-column label="社区" width="300">
           <template #default="{ row }">
             <div class="community-cell">
-              <div class="community-name">
-                {{ row.name }}
-                <el-tag v-if="!row.is_active" type="danger" size="small">已停用</el-tag>
+              <div class="community-avatar">{{ row.name.charAt(0).toUpperCase() }}</div>
+              <div class="community-info">
+                <div class="community-name">
+                  {{ row.name }}
+                  <span v-if="!row.is_active" class="status-badge status-disabled">已停用</span>
+                </div>
+                <div class="community-slug">{{ row.slug }}</div>
               </div>
-              <div class="community-slug">{{ row.slug }}</div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="委员会" width="120" align="center">
+        <el-table-column label="委员会" width="100" align="center">
           <template #default="{ row }">
-            <el-link 
-              :underline="false" 
-              @click="viewCommittees(row.id)"
-              :disabled="row.committee_count === 0"
+            <span
+              class="count-link"
+              :class="{ disabled: row.committee_count === 0 }"
+              @click="row.committee_count > 0 && viewCommittees(row.id)"
             >
               {{ row.committee_count || 0 }}
-            </el-link>
+            </span>
           </template>
         </el-table-column>
-        <el-table-column label="内容数" width="120" align="center">
+        <el-table-column label="内容数" width="100" align="center">
           <template #default="{ row }">
-            <span>{{ row.content_count || 0 }}</span>
+            <span class="meta-text">{{ row.content_count || 0 }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="发布渠道" width="200">
+        <el-table-column label="发布渠道" width="220">
           <template #default="{ row }">
             <div class="channels">
-              <el-tag
+              <span
                 v-for="channel in row.channels"
                 :key="channel.channel"
-                size="small"
-                :type="channel.enabled ? 'success' : 'info'"
-                style="margin-right: 4px"
+                class="count-badge"
+                :class="channel.enabled ? 'channel-active' : 'channel-inactive'"
               >
                 {{ getChannelLabel(channel.channel) }} ({{ channel.publish_count || 0 }})
-              </el-tag>
-              <span v-if="!row.channels || row.channels.length === 0" class="hint">未配置</span>
+              </span>
+              <span v-if="!row.channels || row.channels.length === 0" class="empty-text">未配置</span>
             </div>
           </template>
         </el-table-column>
@@ -119,24 +97,22 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button-group>
-              <el-button size="small" @click="viewCommunity(row.id)">
-                <el-icon><View /></el-icon>
-                查看
-              </el-button>
-              <el-button 
-                v-if="canManageCommunity(row)" 
-                size="small" 
-                @click="manageCommunity(row.id)"
-              >
-                <el-icon><Setting /></el-icon>
-                管理
-              </el-button>
-            </el-button-group>
+            <el-button size="small" @click="viewCommunity(row.id)">
+              <el-icon><View /></el-icon>
+              查看
+            </el-button>
+            <el-button
+              v-if="canManageCommunity(row)"
+              size="small"
+              @click="manageCommunity(row.id)"
+            >
+              <el-icon><Setting /></el-icon>
+              管理
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -145,8 +121,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  Plus, OfficeBuilding, Document, Avatar, Promotion, Search,
-  View, Setting
+  Plus, Search, View, Setting
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
 import { getCommunities } from '../api/community'
@@ -181,10 +156,10 @@ const filteredCommunities = computed(() => {
 })
 
 const totalCommunities = computed(() => communities.value.length)
-const totalCommittees = computed(() => 
+const totalCommittees = computed(() =>
   communities.value.reduce((sum, c) => sum + (c.committee_count || 0), 0)
 )
-const totalContents = computed(() => 
+const totalContents = computed(() =>
   communities.value.reduce((sum, c) => sum + (c.content_count || 0), 0)
 )
 const totalPublishes = computed(() => {
@@ -214,17 +189,14 @@ function canManageCommunity(community: Community): boolean {
 }
 
 function viewCommunity(communityId: number) {
-  // 切换到该社区并跳转到治理概览
   const community = communities.value.find(c => c.id === communityId)
   if (community) {
-    // 设置当前社区ID并跳转到治理概览
     localStorage.setItem('current_community_id', String(communityId))
     router.push('/governance')
   }
 }
 
 function viewCommittees(communityId: number) {
-  // 切换社区并跳转到委员会列表
   router.push(`/committees?community=${communityId}`)
 }
 
@@ -235,40 +207,28 @@ function manageCommunity(communityId: number) {
 async function loadCommunities() {
   loading.value = true
   try {
-    // 获取社区列表
     const communityList = await getCommunities()
-    
-    // 为每个社区获取统计信息
+
     const statsPromises = communityList.map(async (community) => {
       try {
-        // 获取委员会数量
         const committeesRes = await apiClient.get(
           '/committees',
-          {
-            headers: { 'X-Community-Id': community.id }
-          }
+          { headers: { 'X-Community-Id': community.id } }
         )
         const committee_count = committeesRes.data?.length || 0
 
-        // 获取内容数量
         const contentsRes = await apiClient.get(
           '/contents',
-          {
-            headers: { 'X-Community-Id': community.id }
-          }
+          { headers: { 'X-Community-Id': community.id } }
         )
         const content_count = contentsRes.data?.length || 0
 
-        // 获取渠道信息
         const channelsRes = await apiClient.get(
           '/channels',
-          {
-            headers: { 'X-Community-Id': community.id }
-          }
+          { headers: { 'X-Community-Id': community.id } }
         )
         const channels = channelsRes.data || []
 
-        // 为每个渠道获取发布数量
         const channelsWithCounts = await Promise.all(
           channels.map(async (channel: any) => {
             try {
@@ -321,110 +281,55 @@ onMounted(() => {
 
 <style scoped>
 .community-overview {
-  padding: 24px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
+/* Page Title Row */
+.page-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.page-title h2 { margin: 0 0 4px; font-size: 22px; font-weight: 600; color: #1d2129; }
+.page-title .subtitle { margin: 0; color: #86909c; font-size: 14px; }
 
-.page-header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-}
+/* Metric Cards */
+.metric-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.metric-card { background: #fff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.metric-value { font-size: 32px; font-weight: 700; color: #1d2129; line-height: 1.2; }
+.metric-label { font-size: 13px; color: #86909c; margin-top: 4px; }
+.metric-card.highlight-warning .metric-value { color: #f59e0b; }
+.metric-card.highlight-success .metric-value { color: #10b981; }
 
-.stats-row {
-  margin-bottom: 24px;
-}
+/* Section Card */
+.section-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-header h3 { margin: 0; font-size: 16px; font-weight: 600; color: #1d2129; }
 
-.stat-card {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
+/* Community Cell */
+.community-cell { display: flex; align-items: center; gap: 12px; }
+.community-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.community-info { display: flex; flex-direction: column; }
+.community-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #1d2129; }
+.community-slug { font-size: 12px; color: #86909c; }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+/* Count Link */
+.count-link { font-size: 14px; font-weight: 600; color: #3b82f6; cursor: pointer; }
+.count-link:hover { text-decoration: underline; }
+.count-link.disabled { color: #86909c; cursor: default; }
+.count-link.disabled:hover { text-decoration: none; }
 
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+/* Badges */
+.count-badge { display: inline-flex; align-items: center; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; margin-right: 4px; margin-bottom: 4px; }
+.channel-active { background: #f0fdf4; color: #22c55e; }
+.channel-inactive { background: #f7f8fa; color: #86909c; }
 
-.stat-icon {
-  flex-shrink: 0;
-}
+.status-badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.status-disabled { background: #fef2f2; color: #ef4444; }
 
-.stat-info {
-  flex: 1;
-}
+/* Meta */
+.meta-text { font-size: 14px; color: #4e5969; }
+.empty-text { color: #c0c4cc; font-size: 12px; }
+.description { color: #4e5969; font-size: 13px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #909399;
-}
-
-.communities-card {
-  margin-top: 24px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-}
-
-.community-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.community-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.community-slug {
-  font-size: 12px;
-  color: #909399;
-}
-
-.channels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.hint {
-  color: #c0c4cc;
-  font-size: 12px;
-}
-
-.description {
-  color: #606266;
-  font-size: 13px;
-  line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+/* Channels */
+.channels { display: flex; flex-wrap: wrap; }
 </style>

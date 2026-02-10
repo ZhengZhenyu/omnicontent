@@ -1,33 +1,51 @@
 <template>
   <div class="user-manage">
-    <div class="page-header">
-      <h2>用户管理</h2>
+    <!-- 页面标题 -->
+    <div class="page-title-row">
+      <div class="page-title">
+        <h2>用户管理</h2>
+        <p class="subtitle">管理系统中的所有用户账号</p>
+      </div>
       <el-button type="primary" :icon="Plus" @click="showRegisterDialog">注册新用户</el-button>
     </div>
 
-    <el-card>
-      <el-table :data="users" v-loading="loading" stripe>
+    <!-- 用户表格 -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>用户列表</h3>
+        <span class="section-desc">共 {{ users.length }} 个用户</span>
+      </div>
+      <el-table :data="users" v-loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="username" label="用户名" width="140" />
-        <el-table-column prop="email" label="邮箱" min-width="200" />
-        <el-table-column prop="full_name" label="姓名" width="140">
-          <template #default="{ row }">{{ row.full_name || '-' }}</template>
+        <el-table-column label="用户" min-width="200">
+          <template #default="{ row }">
+            <div class="user-cell">
+              <div class="user-avatar">{{ (row.full_name || row.username).charAt(0).toUpperCase() }}</div>
+              <div class="user-detail">
+                <span class="user-name">{{ row.full_name || row.username }}</span>
+                <span class="user-email">{{ row.email }}</span>
+              </div>
+            </div>
+          </template>
         </el-table-column>
         <el-table-column label="角色" width="120">
           <template #default="{ row }">
-            <el-tag v-if="row.is_superuser" type="danger" size="small">超级管理员</el-tag>
-            <el-tag v-else type="info" size="small">普通用户</el-tag>
+            <span class="role-badge" :class="row.is_superuser ? 'role-admin' : 'role-user'">
+              {{ row.is_superuser ? '超级管理员' : '普通用户' }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.is_active ? 'success' : 'danger'" size="small">
+            <span class="status-badge" :class="row.is_active ? 'status-active' : 'status-disabled'">
               {{ row.is_active ? '活跃' : '已禁用' }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="180">
-          <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
+          <template #default="{ row }">
+            <span class="meta-text">{{ formatDate(row.created_at) }}</span>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
@@ -41,7 +59,7 @@
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
 
     <!-- Register User Dialog -->
     <el-dialog v-model="registerDialogVisible" title="注册新用户" width="480px">
@@ -72,7 +90,7 @@
           <el-checkbox v-model="registerForm.is_superuser">
             创建为超级管理员
           </el-checkbox>
-          <div style="color: #909399; font-size: 12px; margin-top: 4px;">
+          <div style="color: #86909c; font-size: 12px; margin-top: 4px;">
             超级管理员可以管理所有社区和用户
           </div>
         </el-form-item>
@@ -281,11 +299,40 @@ onMounted(loadUsers)
 </script>
 
 <style scoped>
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+.user-manage {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
-.page-header h2 { margin: 0; }
+
+/* Page Title Row */
+.page-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.page-title h2 { margin: 0 0 4px; font-size: 22px; font-weight: 600; color: #1d2129; }
+.page-title .subtitle { margin: 0; color: #86909c; font-size: 14px; }
+
+/* Section Card */
+.section-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+.section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+.section-header h3 { margin: 0; font-size: 16px; font-weight: 600; color: #1d2129; }
+.section-desc { font-size: 13px; color: #86909c; }
+
+/* User Cell */
+.user-cell { display: flex; align-items: center; gap: 12px; }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.user-detail { display: flex; flex-direction: column; }
+.user-name { font-size: 14px; font-weight: 500; color: #1d2129; }
+.user-email { font-size: 12px; color: #86909c; }
+
+/* Role Badge */
+.role-badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.role-admin { background: #fef2f2; color: #ef4444; }
+.role-user { background: #f7f8fa; color: #86909c; }
+
+/* Status Badge */
+.status-badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.status-active { background: #f0fdf4; color: #10b981; }
+.status-disabled { background: #fef2f2; color: #ef4444; }
+
+/* Meta Text */
+.meta-text { font-size: 13px; color: #86909c; }
 </style>

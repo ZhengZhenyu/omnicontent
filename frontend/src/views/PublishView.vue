@@ -8,8 +8,11 @@
     </el-empty>
 
     <template v-else>
-      <div class="page-header">
-        <h2>发布管理 {{ content ? `- ${content.title}` : '' }}</h2>
+      <div class="page-title">
+        <div>
+          <h2>发布管理</h2>
+          <p class="subtitle">{{ content ? content.title : '多渠道发布内容' }}</p>
+        </div>
         <el-button @click="$router.back()">返回</el-button>
       </div>
 
@@ -20,8 +23,10 @@
       <template v-else>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-card>
-              <template #header>选择发布渠道</template>
+            <div class="section-card">
+              <div class="section-header">
+                <h3>选择发布渠道</h3>
+              </div>
               <div class="channel-list">
                 <div
                   v-for="ch in channels"
@@ -53,23 +58,25 @@
                   >
                     复制内容
                   </el-button>
-                </div>
-              </div>
-            </el-card>
+              div>
 
+            <div class="section-card" v-if="records.length">
+              <div class="section-header">
+                <h3>发布记录</h3>
+              </div
             <el-card style="margin-top: 16px" v-if="records.length">
               <template #header>发布记录</template>
               <div v-for="rec in records" :key="rec.id" class="record-item">
                 <el-tag :type="rec.status === 'published' ? 'success' : rec.status === 'failed' ? 'danger' : 'warning'" size="small">
                   {{ rec.status }}
-                </el-tag>
-                <span class="record-channel">{{ channelLabel(rec.channel) }}</span>
-                <span class="record-time">{{ formatDate(rec.created_at) }}</span>
-              </div>
-            </el-card>
+              div>
           </el-col>
 
           <el-col :span="12">
+            <div class="section-card">
+              <div class="section-header">
+                <h3>{{ activeChannel ? channelLabel(activeChannel) + ' 预览' : '渠道预览' }}</h3>
+              </div"12">
             <el-card>
               <template #header>
                 {{ activeChannel ? channelLabel(activeChannel) + ' 预览' : '渠道预览' }}
@@ -78,7 +85,7 @@
               <div v-else-if="previewContent" class="preview-area">
                 <div v-if="previewFormat === 'html'" v-html="previewContent" class="wechat-preview" />
                 <pre v-else class="markdown-preview">{{ previewContent }}</pre>
-              </div>
+              div
               <el-empty v-else description="点击左侧渠道查看预览" />
             </el-card>
           </el-col>
@@ -185,24 +192,119 @@ function channelLabel(ch: string) {
 
 function formatDate(d: string) { return new Date(d).toLocaleString('zh-CN') }
 </script>
-
-<style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; }
-.channel-list { display: flex; flex-direction: column; gap: 12px; }
-.channel-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 16px; border: 1px solid #e4e7ed; border-radius: 8px; cursor: pointer; transition: all .2s;
+title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
-.channel-item:hover { border-color: #409eff; }
-.channel-item.active { border-color: #409eff; background: #ecf5ff; }
-.channel-info { display: flex; align-items: center; gap: 12px; }
-.channel-name { font-weight: 500; }
-.channel-mode { font-size: 12px; color: #999; }
-.record-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-.record-channel { font-weight: 500; }
-.record-time { color: #999; font-size: 13px; margin-left: auto; }
-.preview-area { max-height: 600px; overflow-y: auto; }
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1d2129;
+}
+.page-title .subtitle {
+  margin: 0;
+  color: #86909c;
+  font-size: 14px;
+}
+
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.channel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.channel-item:hover {
+  border-color: #3b82f6;
+  background: #f0f4ff;
+}
+.channel-item.active {
+  border-color: #3b82f6;
+  background: #ecf5ff;
+}
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.channel-name {
+  font-weight: 500;
+  color: #1d2129;
+}
+.channel-mode {
+  font-size: 12px;
+  color: #86909c;
+}
+.record-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.record-item:last-child {
+  border-bottom: none;
+}
+.record-channel {
+  font-weight: 500;
+  color: #4e5969;
+}
+.record-time {
+  color: #86909c;
+  font-size: 13px;
+  margin-left: auto;
+}
+.preview-area {
+  max-height: 600px;
+  overflow-y: auto;
+}
+.wechat-preview {
+  padding: 16px;
+  background: #fff;
+}
+.markdown-preview {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4e5969;
+
 .wechat-preview { padding: 16px; background: #fff; }
 .markdown-preview { padding: 16px; background: #f8f8f8; border-radius: 4px; white-space: pre-wrap; font-size: 13px; line-height: 1.6; }
 </style>

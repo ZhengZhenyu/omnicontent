@@ -8,18 +8,16 @@
     </el-empty>
 
     <template v-else>
-      <div class="page-header">
+      <div class="page-title">
         <div>
           <h2>渠道设置</h2>
-          <p class="subtitle">
-            当前社区: <strong>{{ currentCommunityName }}</strong>
-          </p>
+          <p class="subtitle">当前社区: <strong>{{ currentCommunityName }}</strong></p>
         </div>
       </div>
 
       <el-row :gutter="20">
         <el-col :span="12" v-for="ch in channelList" :key="ch.key">
-          <el-card style="margin-bottom: 20px">
+          <div class="section-card" style="margin-bottom: 20px">
             <template #header>
               <div class="card-header">
                 <span>{{ ch.label }}</span>
@@ -75,7 +73,7 @@
             <el-button v-if="['wechat', 'hugo'].includes(ch.key)" type="primary" size="small" @click="handleSave(ch)">
               保存配置
             </el-button>
-          </el-card>
+          </div>
         </el-col>
       </el-row>
     </template>
@@ -182,26 +180,29 @@ async function handleToggle(ch: ChannelItem) {
 </script>
 
 <style scoped>
-.settings h2 { margin: 0 0 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.hint-text{
-  padding: 24px;
-}
-
-.page-header {
+.page-title {
   margin-bottom: 24px;
 }
 
-.page-header h2 {
+.page-title h2 {
   margin: 0 0 4px;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
+  color: #1d2129;
 }
 
-.subtitle {
+.page-title .subtitle {
   margin: 0;
-  color: #606266;
+  color: #86909c;
   font-size: 14px;
+}
+
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
 }
 
 .card-header {

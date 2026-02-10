@@ -8,10 +8,10 @@
     </el-empty>
 
     <template v-else>
-      <div class="page-header">
-        <div class="header-title">
+      <div class="page-title">
+        <div>
           <h2>会议日历</h2>
-          <p>查看和管理委员会会议</p>
+          <p class="subtitle">查看和管理委员会会议</p>
         </div>
         <el-button
           v-if="isAdmin"
@@ -23,7 +23,7 @@
         </el-button>
       </div>
 
-      <div class="filter-bar">
+      <div class="section-card filter-section">
         <el-select
           v-model="selectedCommittee"
           placeholder="选择委员会"
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Calendar View -->
-      <el-card v-if="viewMode === 'month'" v-loading="loading" class="calendar-card">
+      <div v-if="viewMode === 'month'" v-loading="loading" class="section-card calendar-card">
         <el-calendar v-model="currentDate">
           <template #date-cell="{ data }">
             <div class="calendar-day">
@@ -67,10 +67,10 @@
             </div>
           </template>
         </el-calendar>
-      </el-card>
+      </div>
 
       <!-- List View -->
-      <el-card v-else v-loading="loading" class="list-card">
+      <div v-else v-loading="loading" class="section-card list-card">
         <div class="meeting-list">
           <div
             v-for="meeting in sortedMeetings"
@@ -127,7 +127,7 @@
 
           <el-empty v-if="sortedMeetings.length === 0" description="暂无会议" />
         </div>
-      </el-card>
+      </div>
 
       <!-- Create/Edit Dialog -->
       <el-dialog
@@ -574,29 +574,39 @@ function getCommitteeName(committeeId: number) {
   padding: 24px;
 }
 
-.page-header {
+.page-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.header-title h2 {
-  margin: 0 0 4px 0;
-  font-size: 24px;
+.page-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
   font-weight: 600;
+  color: #1d2129;
 }
 
-.header-title p {
+.page-title .subtitle {
   margin: 0;
-  color: var(--el-text-color-secondary);
+  color: #86909c;
   font-size: 14px;
 }
 
-.filter-bar {
+.section-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.filter-section {
+  padding: 16px 24px;
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
