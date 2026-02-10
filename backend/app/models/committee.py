@@ -65,10 +65,12 @@ class CommitteeMember(Base):
     )
 
     name = Column(String(200), nullable=False)
-    email = Column(String(200), nullable=True, index=True)
+    email = Column(String(200), nullable=False, index=True)
     phone = Column(String(50), nullable=True)
     wechat = Column(String(100), nullable=True)
-    organization = Column(String(200), nullable=True)
+    organization = Column(String(200), nullable=False)
+    gitcode_id = Column(String(100), nullable=True)
+    github_id = Column(String(100), nullable=True)
 
     # 角色标签（中文，可多选，JSON数组）
     # 可选值: ["主席", "副主席", "委员", "常务委员"]

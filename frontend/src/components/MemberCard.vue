@@ -41,6 +41,14 @@
           <el-icon><ChatDotRound /></el-icon>
           <span>{{ member.wechat }}</span>
         </div>
+        <div v-if="member.gitcode_id" class="contact-item">
+          <el-icon><Link /></el-icon>
+          <span>Gitcode: {{ member.gitcode_id }}</span>
+        </div>
+        <div v-if="member.github_id" class="contact-item">
+          <el-icon><Link /></el-icon>
+          <span>GitHub: {{ member.github_id }}</span>
+        </div>
       </div>
 
       <div v-if="member.term_start || member.term_end" class="member-term">
@@ -75,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { Message, Phone, ChatDotRound, Calendar, Edit, Delete } from '@element-plus/icons-vue'
+import { Message, Phone, ChatDotRound, Calendar, Edit, Delete, Link } from '@element-plus/icons-vue'
 import RoleBadge from './RoleBadge.vue'
 import type { CommitteeMember } from '@/api/governance'
 

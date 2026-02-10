@@ -103,13 +103,13 @@
     <el-dialog
       v-model="showMemberDialog"
       :title="editingMember ? '编辑成员' : '添加成员'"
-      width="600px"
+      width="650px"
     >
       <el-form
         ref="memberFormRef"
         :model="memberForm"
         :rules="memberRules"
-        label-width="100px"
+        label-width="110px"
       >
         <el-form-item label="姓名" prop="name">
           <el-input v-model="memberForm.name" placeholder="成员姓名" />
@@ -119,38 +119,45 @@
           <el-input v-model="memberForm.organization" placeholder="所属组织或公司" />
         </el-form-item>
 
-        <el-form-item label="角色" prop="roles">
-          <el-select
-            v-model="memberForm.roles"
-            multiple
-            placeholder="选择角色"
-            style="width: 100%"
-          >
-            <el-option label="主席" value="chair" />
-            <el-option label="副主席" value="vice_chair" />
-            <el-option label="秘书长" value="secretary" />
-            <el-option label="委员" value="member" />
-            <el-option label="观察员" value="observer" />
-          </el-select>
-        </el-form-item>
-
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="memberForm.email" placeholder="email@example.com" />
         </el-form-item>
 
+        <el-form-item label="角色" prop="roles">
+          <el-select
+            v-model="memberForm.roles"
+            multiple
+            placeholder="选择角色（可选）"
+            style="width: 100%"
+          >
+            <el-option label="主席" value="chair" />
+            <el-option label="副主席" value="vice_chair" />
+            <el-option label="委员" value="member" />
+            <el-option label="常务委员" value="standing_member" />
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="电话" prop="phone">
-          <el-input v-model="memberForm.phone" placeholder="联系电话" />
+          <el-input v-model="memberForm.phone" placeholder="联系电话（可选）" />
         </el-form-item>
 
         <el-form-item label="微信" prop="wechat">
-          <el-input v-model="memberForm.wechat" placeholder="微信号" />
+          <el-input v-model="memberForm.wechat" placeholder="微信号（可选）" />
+        </el-form-item>
+
+        <el-form-item label="Gitcode ID" prop="gitcode_id">
+          <el-input v-model="memberForm.gitcode_id" placeholder="Gitcode 用户名（可选）" />
+        </el-form-item>
+
+        <el-form-item label="GitHub ID" prop="github_id">
+          <el-input v-model="memberForm.github_id" placeholder="GitHub 用户名（可选）" />
         </el-form-item>
 
         <el-form-item label="任期开始" prop="term_start">
           <el-date-picker
             v-model="memberForm.term_start"
             type="date"
-            placeholder="选择开始日期"
+            placeholder="选择开始日期（可选）"
             format="YYYY-MM-DD"
             value-format="YYYY-MM-DD"
             style="width: 100%"
@@ -173,7 +180,7 @@
             v-model="memberForm.bio"
             type="textarea"
             :rows="3"
-            placeholder="简要介绍成员背景"
+            placeholder="简要介绍成员背景（可选）"
           />
         </el-form-item>
 
@@ -237,11 +244,13 @@ const memberFormRef = ref<FormInstance>()
 
 interface MemberForm {
   name: string
-  organization?: string
+  organization: string
+  email: string
   roles: string[]
-  email?: string
   phone?: string
   wechat?: string
+  gitcode_id?: string
+  github_id?: string
   term_start?: string
   term_end?: string
   bio?: string
@@ -251,10 +260,12 @@ interface MemberForm {
 const memberForm = ref<MemberForm>({
   name: '',
   organization: '',
-  roles: [],
   email: '',
+  roles: [],
   phone: '',
   wechat: '',
+  gitcode_id: '',
+  github_id: '',
   term_start: '',
   term_end: '',
   bio: '',
@@ -265,6 +276,14 @@ const memberRules: FormRules = {
   name: [
     { required: true, message: '请输入成员姓名', trigger: 'blur' },
     { min: 1, max: 200, message: '姓名长度在1-200个字符', trigger: 'blur' }
+  ],
+  organization: [
+    { required: true, message: '请输入组织名称', trigger: 'blur' },
+    { min: 1, max: 200, message: '组织名称长度在1-200个字符', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
   ]
 }
 
