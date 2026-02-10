@@ -22,10 +22,12 @@ export interface CommitteeMember {
   id: number
   committee_id: number
   name: string
-  email?: string
+  email: string
   phone?: string
   wechat?: string
-  organization?: string
+  organization: string
+  gitcode_id?: string
+  github_id?: string
   roles: string[]
   term_start?: string
   term_end?: string
@@ -58,10 +60,12 @@ export interface CommitteeUpdate {
 
 export interface CommitteeMemberCreate {
   name: string
-  email?: string
+  email: string
   phone?: string
   wechat?: string
-  organization?: string
+  organization: string
+  gitcode_id?: string
+  github_id?: string
   roles?: string[]
   term_start?: string
   term_end?: string
@@ -74,6 +78,8 @@ export interface CommitteeMemberUpdate {
   phone?: string
   wechat?: string
   organization?: string
+  gitcode_id?: string
+  github_id?: string
   roles?: string[]
   term_start?: string
   term_end?: string

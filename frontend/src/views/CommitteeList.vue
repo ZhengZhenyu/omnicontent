@@ -124,7 +124,7 @@
           <el-form-item label="通知邮箱" prop="notification_email">
             <el-input
               v-model="form.notification_email"
-              placeholder="用于接收会议通知的邮箱"
+              placeholder="用于发送通知的邮箱"
             />
           </el-form-item>
 
@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, UserFilled, Edit, Delete } from '@element-plus/icons-vue'
@@ -217,9 +217,20 @@ const rules: FormRules = {
 }
 
 onMounted(() => {
-  if (!communityStore.currentCommunityId) return
-  loadCommittees()
+  if (communityStore.currentCommunityId) {
+    loadCommittees()
+  }
 })
+
+// Watch for community changes
+watch(
+  () => communityStore.currentCommunityId,
+  (newId) => {
+    if (newId) {
+      loadCommittees()
+    }
+  }
+)
 
 async function loadCommittees() {
   loading.value = true

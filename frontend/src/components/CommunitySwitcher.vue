@@ -1,10 +1,11 @@
 <template>
   <div class="community-switcher">
     <el-select
-      v-model="selectedCommunityId"
+      :model-value="selectedCommunityId"
       :placeholder="communities.length === 0 ? '暂无社区' : '选择社区'"
       :disabled="communities.length === 0"
       size="default"
+      filterable
       @change="handleCommunityChange"
     >
       <el-option
@@ -23,22 +24,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 import { useCommunityStore } from '../stores/community'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const communityStore = useCommunityStore()
 
 const communities = computed(() => authStore.communities)
-const selectedCommunityId = ref<number | null>(communityStore.currentCommunityId)
+const selectedCommunityId = computed(() => communityStore.currentCommunityId)
 
-// Watch for external changes to current community
+// Auto-select first community if no community is selected and communities are available
+onMounted(() => {
+  if (!selectedCommunityId.value && communities.value.length > 0) {
+    communityStore.setCommunity(communities.value[0].id)
+  }
+})
+
+// Watch for changes in communities list
 watch(
-  () => communityStore.currentCommunityId,
-  (newId) => {
-    selectedCommunityId.value = newId
+  () => communities.value.length,
+  (newLength) => {
+    // If we have communities but no selected community, select the first one
+    if (newLength > 0 && !selectedCommunityId.value) {
+      communityStore.setCommunity(communities.value[0].id)
+    }
   }
 )
 
@@ -47,8 +60,10 @@ const handleCommunityChange = (communityId: number) => {
   if (community) {
     communityStore.setCommunity(communityId)
     ElMessage.success(`已切换到社区: ${community.name}`)
-    // Reload page to refresh data for new community
-    window.location.reload()
+    
+    // Navigate to community overview instead of reloading
+    // This allows the app to handle data refresh internally
+    router.push('/community-overview')
   }
 }
 </script>

@@ -58,10 +58,12 @@ class CommitteeBrief(BaseModel):
 
 class CommitteeMemberCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    email: Optional[str] = None
+    email: str = Field(..., min_length=1, max_length=200)
     phone: Optional[str] = None
     wechat: Optional[str] = None
-    organization: Optional[str] = None
+    organization: str = Field(..., min_length=1, max_length=200)
+    gitcode_id: Optional[str] = None
+    github_id: Optional[str] = None
     roles: list[str] = []
     term_start: Optional[date] = None
     term_end: Optional[date] = None
@@ -70,10 +72,12 @@ class CommitteeMemberCreate(BaseModel):
 
 class CommitteeMemberUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
-    email: Optional[str] = None
+    email: Optional[str] = Field(None, min_length=1, max_length=200)
     phone: Optional[str] = None
     wechat: Optional[str] = None
-    organization: Optional[str] = None
+    organization: Optional[str] = Field(None, min_length=1, max_length=200)
+    gitcode_id: Optional[str] = None
+    github_id: Optional[str] = None
     roles: Optional[list[str]] = None
     term_start: Optional[date] = None
     term_end: Optional[date] = None
@@ -86,10 +90,12 @@ class CommitteeMemberOut(BaseModel):
     id: int
     committee_id: int
     name: str
-    email: Optional[str] = None
+    email: str
     phone: Optional[str] = None
     wechat: Optional[str] = None
-    organization: Optional[str] = None
+    organization: str
+    gitcode_id: Optional[str] = None
+    github_id: Optional[str] = None
     roles: list[str] = []
     term_start: Optional[date] = None
     term_end: Optional[date] = None

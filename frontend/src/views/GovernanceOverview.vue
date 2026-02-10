@@ -153,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { OfficeBuilding, UserFilled, Calendar, Clock, ArrowRight, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -184,9 +184,20 @@ const stats = computed(() => {
 })
 
 onMounted(() => {
-  if (!communityStore.currentCommunityId) return
-  loadData()
+  if (communityStore.currentCommunityId) {
+    loadData()
+  }
 })
+
+// Watch for community changes
+watch(
+  () => communityStore.currentCommunityId,
+  (newId) => {
+    if (newId) {
+      loadData()
+    }
+  }
+)
 
 async function loadData() {
   await Promise.all([loadCommittees(), loadMeetings()])

@@ -237,7 +237,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
@@ -324,14 +324,26 @@ const sortedMeetings = computed(() => {
 })
 
 onMounted(() => {
-  if (!communityStore.currentCommunityId) return
-  loadCommittees()
-  loadMeetings()
+  if (communityStore.currentCommunityId) {
+    loadCommittees()
+    loadMeetings()
+  }
 
   if (route.query.action === 'create') {
     showCreateDialog.value = true
   }
 })
+
+// Watch for community changes
+watch(
+  () => communityStore.currentCommunityId,
+  (newId) => {
+    if (newId) {
+      loadCommittees()
+      loadMeetings()
+    }
+  }
+)
 
 async function loadCommittees() {
   try {

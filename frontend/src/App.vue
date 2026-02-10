@@ -18,10 +18,6 @@
         text-color="#bbb"
         active-text-color="#409eff"
       >
-        <el-menu-item index="/">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>仪表板</span>
-        </el-menu-item>
         <el-menu-item index="/community-overview">
           <el-icon><OfficeBuilding /></el-icon>
           <span>社区总览</span>
@@ -66,10 +62,6 @@
             <span>批量管理</span>
           </el-menu-item>
         </el-sub-menu>
-        <el-menu-item index="/settings">
-          <el-icon><Setting /></el-icon>
-          <span>渠道设置</span>
-        </el-menu-item>
         <el-menu-item v-if="isSuperuser" index="/communities">
           <el-icon><OfficeBuilding /></el-icon>
           <span>社区管理</span>
@@ -78,11 +70,15 @@
           <el-icon><UserFilled /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
+        <el-menu-item index="/">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>仪表板</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
       <el-header class="app-header">
-        <community-switcher />
+        <community-switcher v-if="showCommunitySwitcher" />
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="user-info">
@@ -132,14 +128,37 @@ const showLayout = computed(() => {
   return !noLayoutRoutes.includes(route.name as string)
 })
 
+// 判断是否显示社区选择下拉框
+// 社区总览、社区管理、用户管理页面不显示
+const showCommunitySwitcher = computed(() => {
+  const hideSwitcherRoutes = [
+    'CommunityOverview',
+    'CommunityManage',
+    'UserManage',
+    'Dashboard'
+  ]
+  return !hideSwitcherRoutes.includes(route.name as string)
+})
+
 onMounted(async () => {
-  if (authStore.isAuthenticated && !authStore.user) {
-    try {
-      const userInfo = await getUserInfo()
-      authStore.setUser(userInfo.user)
-      authStore.setCommunities(userInfo.communities)
-    } catch {
-      // If failed to get user info, clear auth
+  if (authStore.isAuthenticated) {
+    // Always fetch user info and communities to ensure they're up to date
+    if (!authStore.user || authStore.communities.length === 0) {
+      try {
+        const userInfo = await getUserInfo()
+        authStore.setUser(userInfo.user)
+        authStore.setCommunities(userInfo.communities)
+        
+        // Set the first community as default if not already set
+        if (userInfo.communities.length > 0) {
+          const currentCommunityId = localStorage.getItem('current_community_id')
+          if (!currentCommunityId) {
+            localStorage.setItem('current_community_id', String(userInfo.communities[0].id))
+          }
+        }
+      } catch {
+        // If failed to get user info, clear auth
+      }
     }
   }
 })

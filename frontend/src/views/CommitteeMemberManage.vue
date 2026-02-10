@@ -203,9 +203,11 @@ import {
   CircleCloseFilled
 } from '@element-plus/icons-vue'
 import { listCommittees, getCommittee, type Committee, type CommitteeWithMembers } from '@/api/governance'
+import { useCommunityStore } from '@/stores/community'
 import apiClient from '@/api/index'
 
 const router = useRouter()
+const communityStore = useCommunityStore()
 
 const committees = ref<Committee[]>([])
 const selectedCommitteeId = ref<number | undefined>()
@@ -229,6 +231,11 @@ const memberCount = computed(() => {
 })
 
 onMounted(() => {
+  // Ensure community ID is set from store
+  const currentCommunityId = communityStore.currentCommunityId
+  if (currentCommunityId) {
+    localStorage.setItem('current_community_id', String(currentCommunityId))
+  }
   loadCommittees()
 })
 
@@ -247,6 +254,11 @@ async function handleCommitteeChange() {
   }
 
   try {
+    // Set current community ID for API calls
+    const committee = committees.value.find(c => c.id === selectedCommitteeId.value)
+    if (committee) {
+      localStorage.setItem('current_community_id', String(committee.community_id))
+    }
     selectedCommittee.value = await getCommittee(selectedCommitteeId.value)
   } catch (error: any) {
     ElMessage.error(error.message || '加载委员会详情失败')
@@ -258,6 +270,12 @@ async function exportMembers() {
 
   exporting.value = true
   try {
+    // Ensure community ID is set before making request
+    const committee = committees.value.find(c => c.id === selectedCommitteeId.value)
+    if (committee) {
+      localStorage.setItem('current_community_id', String(committee.community_id))
+    }
+
     const response = await apiClient.get(`/committees/${selectedCommitteeId.value}/members/export`, {
       responseType: 'blob'
     })
@@ -266,7 +284,6 @@ async function exportMembers() {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    const committee = committees.value.find(c => c.id === selectedCommitteeId.value)
     link.setAttribute('download', `${committee?.slug || 'members'}_members.csv`)
     document.body.appendChild(link)
     link.click()
@@ -297,14 +314,16 @@ async function importMembers() {
 
   importing.value = true
   try {
+    // Ensure community ID is set before making request
+    const committee = committees.value.find(c => c.id === selectedCommitteeId.value)
+    if (committee) {
+      localStorage.setItem('current_community_id', String(committee.community_id))
+    }
+
     const formData = new FormData()
     formData.append('file', file)
 
-    const { data: result } = await apiClient.post<ImportResult>(`/committees/${selectedCommitteeId.value}/members/import`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const { data: result } = await apiClient.post<ImportResult>(`/committees/${selectedCommitteeId.value}/members/import`, formData)
 
     importResult.value = result
 

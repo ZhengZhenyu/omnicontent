@@ -202,10 +202,17 @@ def get_current_user_info(
     """
     from app.core.dependencies import get_user_community_role
     from app.schemas.community import CommunityWithRole
-    
+    from app.models.community import Community
+
+    # Superusers can see all communities
+    if current_user.is_superuser:
+        communities = db.query(Community).all()
+    else:
+        communities = current_user.communities
+
     # Build communities with roles
     communities_with_roles = []
-    for community in current_user.communities:
+    for community in communities:
         role = get_user_community_role(current_user, community.id, db)
         communities_with_roles.append(
             CommunityWithRole(
