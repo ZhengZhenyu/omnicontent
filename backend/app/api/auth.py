@@ -11,7 +11,7 @@ from app.database import get_db
 from app.models import User
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
-    LoginRequest, Token, UserCreate, UserOut, UserInfoResponse,
+    LoginRequest, Token, UserCreate, UserUpdate, UserOut, UserInfoResponse,
     InitialSetupRequest, PasswordResetRequest,
     PasswordResetConfirm, SystemStatusResponse,
 )
@@ -243,6 +243,102 @@ def list_all_users(
     """
     users = db.query(User).filter(User.is_default_admin == False).order_by(User.id).all()  # noqa: E712
     return users
+
+
+@router.patch("/users/{user_id}", response_model=UserOut)
+def update_user(
+    user_id: int,
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_active_superuser),
+    db: Session = Depends(get_db),
+):
+    """
+    Update a user's information. Only superusers can update users.
+    """
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在",
+        )
+
+    # Prevent demoting yourself
+    if user_update.is_superuser is False and target_user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="不能取消自己的超级管理员权限",
+        )
+
+    # Prevent demoting the last superuser
+    if user_update.is_superuser is False and target_user.is_superuser:
+        superuser_count = db.query(User).filter(
+            User.is_superuser == True, User.is_default_admin == False  # noqa: E712
+        ).count()
+        if superuser_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="不能取消最后一个超级管理员的权限",
+            )
+
+    # Check email uniqueness if updating email
+    if user_update.email is not None:
+        existing = db.query(User).filter(
+            User.email == user_update.email, User.id != user_id
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="该邮箱已被其他用户使用",
+            )
+
+    # Apply updates
+    update_data = user_update.model_dump(exclude_unset=True)
+    if "password" in update_data:
+        target_user.hashed_password = get_password_hash(update_data.pop("password"))
+    for field, value in update_data.items():
+        setattr(target_user, field, value)
+
+    db.commit()
+    db.refresh(target_user)
+    return target_user
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: int,
+    current_user: User = Depends(get_current_active_superuser),
+    db: Session = Depends(get_db),
+):
+    """
+    Delete a user. Only superusers can delete users.
+    """
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在",
+        )
+
+    # Cannot delete yourself
+    if target_user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="不能删除自己的账号",
+        )
+
+    # Cannot delete the last superuser
+    if target_user.is_superuser:
+        superuser_count = db.query(User).filter(
+            User.is_superuser == True, User.is_default_admin == False  # noqa: E712
+        ).count()
+        if superuser_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="不能删除最后一个超级管理员",
+            )
+
+    db.delete(target_user)
+    db.commit()
 
 
 @router.post("/password-reset/request", status_code=status.HTTP_200_OK)

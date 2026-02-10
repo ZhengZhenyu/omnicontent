@@ -83,3 +83,17 @@ export async function listAllUsers(): Promise<User[]> {
   const { data } = await apiClient.get<User[]>('/auth/users')
   return data
 }
+
+export async function updateUser(userId: number, userData: {
+  email?: string
+  full_name?: string
+  is_superuser?: boolean
+  is_active?: boolean
+}): Promise<User> {
+  const { data } = await apiClient.patch<User>(`/auth/users/${userId}`, userData)
+  return data
+}
+
+export async function deleteUser(userId: number): Promise<void> {
+  await apiClient.delete(`/auth/users/${userId}`)
+}
