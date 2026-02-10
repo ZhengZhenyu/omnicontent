@@ -1,6 +1,6 @@
 # 错误响应格式
 
-本文档定义 OmniContent API 的错误响应格式。
+本文档定义 openGecko API 的错误响应格式。
 
 ---
 

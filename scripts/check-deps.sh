@@ -10,7 +10,7 @@ NC='\033[0m'
 
 ok=true
 
-echo "Checking dependencies for Community Content Hub..."
+echo "Checking dependencies for openGecko..."
 echo ""
 
 # Python 3.11+

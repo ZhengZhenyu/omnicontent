@@ -10,7 +10,7 @@ body:
       value: |
         👋 Have a question? We're here to help!
 
-        **Note**: For general discussions, please use [GitHub Discussions](https://github.com/ZhengZhenyu/omnicontent/discussions).
+        **Note**: For general discussions, please use [GitHub Discussions](https://github.com/opensourceways/openGecko/discussions).
 
   - type: dropdown
     id: category

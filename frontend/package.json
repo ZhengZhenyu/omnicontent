@@ -1,8 +1,8 @@
 {
-  "name": "omnicontent",
+  "name": "opengecko",
   "private": true,
   "version": "0.1.0",
-  "description": "OmniContent - Enterprise multi-tenant content management platform",
+  "description": "openGecko - Enterprise multi-tenant content management platform",
   "type": "module",
   "scripts": {
     "dev": "vite",

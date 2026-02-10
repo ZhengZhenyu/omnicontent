@@ -3,7 +3,7 @@
     <el-card class="setup-card">
       <template #header>
         <div class="card-header">
-          <h2>OmniContent</h2>
+          <h2>openGecko</h2>
           <p class="subtitle">系统初始化设置</p>
         </div>
       </template>
@@ -15,7 +15,7 @@
         class="setup-alert"
       >
         <template #title>
-          欢迎使用 OmniContent！请创建您的超级管理员账号。
+          欢迎使用 openGecko！请创建您的超级管理员账号。
         </template>
         <p>创建账号后，您可以开始创建社区并管理内容。默认管理员账号将自动删除。</p>
       </el-alert>

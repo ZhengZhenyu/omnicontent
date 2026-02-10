@@ -59,7 +59,7 @@
 #### 1. 启动后端服务
 
 ```bash
-cd /root/omnicontent/content-phase2/backend
+cd /root/openGecko/content-phase2/backend
 
 # 启动 FastAPI 服务
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -104,7 +104,7 @@ curl -X POST "http://localhost:8000/api/communities/${COMMUNITY_ID}/channels" \
 ### 方法二: 直接操作数据库（仅开发环境）
 
 ```bash
-cd /root/omnicontent/content-phase2/backend
+cd /root/openGecko/content-phase2/backend
 
 # 进入 Python Shell
 python
@@ -527,5 +527,5 @@ db.close()
 ---
 
 **编写时间**: 2026-02-09
-**适用版本**: OmniContent v2.0+
+**适用版本**: openGecko v2.0+
 **维护者**: 内容与发布专家 (角色2)

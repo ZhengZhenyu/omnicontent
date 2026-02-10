@@ -1,6 +1,6 @@
-# Contributing to OmniContent
+# Contributing to openGecko
 
-Thank you for considering contributing to OmniContent! This document provides guidelines and instructions for contributing.
+Thank you for considering contributing to openGecko! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -29,8 +29,8 @@ This project follows a professional and respectful code of conduct. Please be ki
 
 ```bash
 # Clone the repository
-git clone https://github.com/ZhengZhenyu/omnicontent.git
-cd omnicontent
+git clone https://github.com/opensourceways/openGecko.git
+cd openGecko
 
 # One-command setup (recommended)
 make setup
@@ -382,4 +382,4 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ---
 
-Thank you for contributing to OmniContent! 🚀
+Thank you for contributing to openGecko! 🚀

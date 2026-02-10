@@ -72,7 +72,7 @@ class OldPublishRecord(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-def init_old_schema(database_url: str = "sqlite:///./omnicontent.db"):
+def init_old_schema(database_url: str = "sqlite:///./opengecko.db"):
     """Initialize the old schema before Phase 1."""
     # If the input is just a filename (not a full URL), convert to SQLite URL
     if not database_url.startswith("sqlite:"):
@@ -108,5 +108,5 @@ def init_old_schema(database_url: str = "sqlite:///./omnicontent.db"):
 
 
 if __name__ == "__main__":
-    database_url = sys.argv[1] if len(sys.argv) > 1 else "sqlite:///./omnicontent.db"
+    database_url = sys.argv[1] if len(sys.argv) > 1 else "sqlite:///./opengecko.db"
     init_old_schema(database_url)

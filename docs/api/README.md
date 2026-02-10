@@ -1,6 +1,6 @@
-# OmniContent API 文档
+# openGecko API 文档
 
-本目录包含 OmniContent 平台所有 API 端点的详细文档。
+本目录包含 openGecko 平台所有 API 端点的详细文档。
 
 ---
 
@@ -106,7 +106,7 @@ docs/api/
 
 ```
 开发环境：http://localhost:8000
-生产环境：https://api.omnicontent.com
+生产环境：https://api.opengecko.com
 ```
 
 ### 认证方式
@@ -291,7 +291,7 @@ GET /api/contents?status=published&community_id=1
 
 ## 多租户隔离
 
-OmniContent 是多租户 SaaS 平台，所有数据按 `community_id` 隔离。
+openGecko 是多租户 SaaS 平台，所有数据按 `community_id` 隔离。
 
 ### 自动隔离
 

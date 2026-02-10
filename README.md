@@ -1,8 +1,8 @@
-# OmniContent
+# openGecko
 
 <div align="center">
 
-<img src="logo.svg" alt="OmniContent Logo" width="120" height="120" />
+<img src="openGecko.jpg" alt="openGecko Logo" width="120" height="120" />
 
 **全域内容管理平台 - Manage All, Publish Everywhere**
 
@@ -17,7 +17,7 @@
 
 ## ✨ 项目简介
 
-OmniContent 是为管理 10+ 开源社区打造的企业级多租户内容管理平台，支持统一管理多个社区的内容策划、创作、编排和多渠道发布。
+openGecko 是为管理 10+ 开源社区打造的企业级多租户内容管理平台，支持统一管理多个社区的内容策划、创作、编排和多渠道发布。
 
 ### 核心特性
 
@@ -106,7 +106,7 @@ make setup
 
 ```env
 # 数据库（默认 SQLite，生产可改为 PostgreSQL）
-DATABASE_URL=sqlite:///./omnicontent.db
+DATABASE_URL=sqlite:///./opengecko.db
 
 # JWT 密钥（⚠️ 生产环境务必修改为强随机字符串）
 JWT_SECRET_KEY=your-secret-key-change-in-production
@@ -212,7 +212,7 @@ docker compose up -d
 
 <div align="center">
 
-**OmniContent** - Manage All, Publish Everywhere 🚀
+**openGecko** - Manage All, Publish Everywhere 🚀
 
 Made with ❤️ for Open Source Communities
 

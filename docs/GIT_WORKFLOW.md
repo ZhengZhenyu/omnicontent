@@ -1,6 +1,6 @@
-# OmniContent Git 工作流规范
+# openGecko Git 工作流规范
 
-本文档定义了 OmniContent 项目的 Git 分支管理策略、提交规范和协作流程，适用于 4 人并行开发的场景。
+本文档定义了 openGecko 项目的 Git 分支管理策略、提交规范和协作流程，适用于 4 人并行开发的场景。
 
 ---
 

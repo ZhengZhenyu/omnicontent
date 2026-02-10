@@ -1,6 +1,6 @@
 # 开发指南
 
-本文档提供 OmniContent 的开发环境设置、工作流程和最佳实践。
+本文档提供 openGecko 的开发环境设置、工作流程和最佳实践。
 
 ## 环境要求
 
@@ -37,8 +37,8 @@ sudo dnf install python3 nodejs git
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/your-org/omnicontent.git
-cd omnicontent
+git clone https://github.com/opensourceways/openGecko.git
+cd openGecko
 ```
 
 ### 2. 一键安装 (推荐)
