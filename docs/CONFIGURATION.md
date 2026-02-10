@@ -1,6 +1,6 @@
 # 配置指南
 
-本文档详细说明 OmniContent 的配置选项。
+本文档详细说明 openGecko 的配置选项。
 
 ## 环境变量配置
 
@@ -15,11 +15,11 @@ cp backend/.env.example backend/.env
 
 ```env
 # 应用配置
-APP_NAME=OmniContent
+APP_NAME=openGecko
 DEBUG=False
 
 # 数据库配置
-DATABASE_URL=sqlite:///./omnicontent.db
+DATABASE_URL=sqlite:///./opengecko.db
 
 # JWT 认证配置
 JWT_SECRET_KEY=your-super-secret-key-change-me-in-production
@@ -35,13 +35,13 @@ CORS_ORIGINS=["http://localhost:3000"]
 #### 开发环境 (SQLite)
 
 ```env
-DATABASE_URL=sqlite:///./omnicontent.db
+DATABASE_URL=sqlite:///./opengecko.db
 ```
 
 #### 生产环境 (PostgreSQL)
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/omnicontent
+DATABASE_URL=postgresql://user:password@localhost:5432/opengecko
 ```
 
 ### 微信公众号配置
@@ -165,7 +165,7 @@ CORS_ORIGINS=["https://your-domain.com"]
 
 ```env
 LOG_LEVEL=INFO
-LOG_FILE=logs/omnicontent.log
+LOG_FILE=logs/opengecko.log
 ```
 
 日志级别: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
@@ -191,7 +191,7 @@ ALLOWED_EXTENSIONS=["jpg", "jpeg", "png", "gif", "docx", "md"]
 services:
   backend:
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/omnicontent
+      - DATABASE_URL=postgresql://postgres:password@db:5432/opengecko
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     ports:
       - "8000:8000"
@@ -203,7 +203,7 @@ services:
     image: postgres:15
     environment:
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=omnicontent
+      - POSTGRES_DB=opengecko
     volumes:
       - postgres_data:/var/lib/postgresql/data
 ```
@@ -270,7 +270,7 @@ BACKUP_DIR=/path/to/backups
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # 备份数据库
-cp backend/omnicontent.db $BACKUP_DIR/omnicontent_$DATE.db
+cp backend/opengecko.db $BACKUP_DIR/opengecko_$DATE.db
 
 # 备份上传文件
 tar -czf $BACKUP_DIR/uploads_$DATE.tar.gz backend/uploads/

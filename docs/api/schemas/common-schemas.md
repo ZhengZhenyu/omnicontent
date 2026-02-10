@@ -1,6 +1,6 @@
 # 通用数据模型
 
-本文档定义 OmniContent API 中使用的通用数据模型和 Schema。
+本文档定义 openGecko API 中使用的通用数据模型和 Schema。
 
 ---
 

@@ -3,8 +3,8 @@
     <el-card class="login-card">
       <template #header>
         <div class="card-header">
-          <img src="/logo.svg" alt="OmniContent" class="logo" />
-          <h2>OmniContent</h2>
+          <img src="/openGecko.jpg" alt="openGecko" class="logo" />
+          <h2>openGecko</h2>
           <p class="subtitle">企业级多社区内容管理平台</p>
         </div>
       </template>
@@ -160,9 +160,13 @@ const handleLogin = async () => {
   text-align: center;
 
   .logo {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 16px;
+    max-width: 120px;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    margin: 0 auto 16px;
+    display: block;
+    object-fit: contain;
   }
 
   h2 {

@@ -9,7 +9,7 @@
     <el-aside width="220px" class="app-aside">
       <div class="logo">
         <el-icon :size="24"><Collection /></el-icon>
-        <span>OmniContent</span>
+        <span>openGecko</span>
       </div>
       <el-menu
         :default-active="route.path"

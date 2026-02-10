@@ -1,11 +1,11 @@
 # 项目结构说明
 
-本文档描述 OmniContent 项目的目录结构和组织方式。
+本文档描述 openGecko 项目的目录结构和组织方式。
 
 ## 根目录结构
 
 ```
-omnicontent/
+openGecko/
 ├── .github/          # GitHub 配置（Actions、PR模板等）
 ├── backend/          # Python FastAPI 后端
 ├── frontend/         # Vue 3 前端

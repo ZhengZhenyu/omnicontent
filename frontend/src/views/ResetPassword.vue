@@ -3,7 +3,7 @@
     <el-card class="reset-card">
       <template #header>
         <div class="card-header">
-          <h2>OmniContent</h2>
+          <h2>openGecko</h2>
           <p class="subtitle">重置密码</p>
         </div>
       </template>

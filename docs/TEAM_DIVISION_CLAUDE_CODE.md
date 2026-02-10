@@ -1,4 +1,4 @@
-# OmniContent 4人团队分工方案（Claude Code增强版）
+# openGecko 4人团队分工方案（Claude Code增强版）
 
 > **开发模式**: 全员使用Claude Code辅助编程
 > **分工原则**: 按业务领域划分，端到端负责，减少依赖
@@ -77,7 +77,7 @@
 
 **与Claude Code协作**:
 ```
-"我负责OmniContent的认证与安全模块。请帮我：
+"我负责openGecko的认证与安全模块。请帮我：
 1. 实现 JWT Token 的生成和验证
 2. 创建用户登录API，包含密码验证
 3. 编写完整的单元测试
@@ -131,7 +131,7 @@
 
 **与Claude Code协作**:
 ```
-"我负责OmniContent的内容管理和多渠道发布。请帮我：
+"我负责openGecko的内容管理和多渠道发布。请帮我：
 1. 实现内容的CRUD API，包含社区隔离
 2. 集成 md-editor-v3 Markdown编辑器
 3. 实现微信公众号草稿发布功能
@@ -188,7 +188,7 @@
 
 **与Claude Code协作**:
 ```
-"我负责OmniContent的社区治理模块。请帮我：
+"我负责openGecko的社区治理模块。请帮我：
 1. 创建 Committee, CommitteeMember, Meeting 数据模型
 2. 实现委员会的CRUD API
 3. 创建会议日历页面，集成 FullCalendar
@@ -256,7 +256,7 @@
 
 **与Claude Code协作**:
 ```
-"我负责OmniContent的基础设施和数据分析。请帮我：
+"我负责openGecko的基础设施和数据分析。请帮我：
 1. 配置 Alembic 数据库迁移
 2. 实现数据分析API，生成ECharts所需数据格式
 3. 配置 Celery 定时任务框架
@@ -763,7 +763,7 @@ POST /api/auth/login
 
 ```
 ✅ 好的提示词：
-"我负责OmniContent的内容管理模块（角色2）。
+"我负责openGecko的内容管理模块（角色2）。
 请只修改以下文件：
 - backend/app/models/content.py
 - backend/app/api/contents.py

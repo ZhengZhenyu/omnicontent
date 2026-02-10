@@ -1,6 +1,6 @@
 # GitHub Configuration
 
-This directory contains GitHub-specific configuration files for the OmniContent project.
+This directory contains GitHub-specific configuration files for the openGecko project.
 
 ## 📁 Contents
 
@@ -213,9 +213,9 @@ git commit -m "docs: update README [skip ci]"
 Add to main README.md:
 
 ```markdown
-![Backend CI](https://github.com/ZhengZhenyu/omnicontent/workflows/Backend%20CI/badge.svg)
-![Frontend CI](https://github.com/ZhengZhenyu/omnicontent/workflows/Frontend%20CI/badge.svg)
-![PR Checks](https://github.com/ZhengZhenyu/omnicontent/workflows/PR%20Checks/badge.svg)
+![Backend CI](https://github.com/opensourceways/openGecko/workflows/Backend%20CI/badge.svg)
+![Frontend CI](https://github.com/opensourceways/openGecko/workflows/Frontend%20CI/badge.svg)
+![PR Checks](https://github.com/opensourceways/openGecko/workflows/PR%20Checks/badge.svg)
 ```
 
 ## 🔐 Secrets and Variables

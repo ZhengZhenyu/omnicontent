@@ -56,7 +56,7 @@ jobs:
       working-directory: ./backend
       run: |
         # Set absolute path for database to ensure consistency
-        DB_PATH="$(pwd)/test_omnicontent.db"
+        DB_PATH="$(pwd)/test_opengecko.db"
         export DATABASE_URL="sqlite:///${DB_PATH}"
 
         # Remove old database if exists

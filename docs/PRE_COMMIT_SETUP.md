@@ -1,6 +1,6 @@
 # Pre-commit Hooks 设置指南
 
-本文档说明如何为 OmniContent 项目配置 pre-commit hooks，确保代码质量和规范。
+本文档说明如何为 openGecko 项目配置 pre-commit hooks，确保代码质量和规范。
 
 ---
 
@@ -36,7 +36,7 @@ pre-commit --version
 
 ```bash
 # 克隆仓库后首次设置
-cd /path/to/omnicontent
+cd /path/to/openGecko
 pre-commit install
 
 # 安装 commit-msg hook（检查提交信息格式）

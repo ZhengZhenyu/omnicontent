@@ -4,11 +4,11 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "OmniContent"
+    APP_NAME: str = "openGecko"
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "sqlite:///./omnicontent.db"
+    DATABASE_URL: str = "sqlite:///./opengecko.db"
 
     # Database Connection Pool (for PostgreSQL/MySQL)
     DB_POOL_SIZE: int = 5
