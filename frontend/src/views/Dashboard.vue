@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { fetchContents, type ContentListItem } from '../api/content'
 import { getAnalyticsOverview, type AnalyticsOverview } from '../api/publish'
 import { getUserInfo } from '../api/auth'
