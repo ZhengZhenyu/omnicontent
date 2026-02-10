@@ -72,6 +72,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresSuperuser: true },
     },
     {
+      path: '/community-overview',
+      name: 'CommunityOverview',
+      component: () => import('../views/CommunityOverview.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/users',
       name: 'UserManage',
       component: () => import('../views/UserManage.vue'),
@@ -123,21 +129,39 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.meta.requiresAuth !== false
   const requiresSuperuser = to.meta.requiresSuperuser === true
 
+  console.log('[Router Guard]', {
+    to: to.name,
+    from: from.name,
+    isAuthenticated: authStore.isAuthenticated,
+    hasUser: !!authStore.user,
+  })
+
+  // Special case: initial-setup page doesn't need user info loaded
+  // It's for default admin to create a new admin account
+  if (to.name === 'InitialSetup' && authStore.isAuthenticated) {
+    console.log('[Router Guard] Allowing access to InitialSetup for authenticated user')
+    next()
+    return
+  }
+
   // If authenticated but user info not loaded, fetch it first
   if (authStore.isAuthenticated && !authStore.user) {
+    console.log('[Router Guard] Loading user info...')
     try {
       const { getUserInfo } = await import('../api/auth')
       const userInfo = await getUserInfo()
       authStore.setUser(userInfo.user)
       authStore.setCommunities(userInfo.communities)
       
-      // Set default community if available and not already set
+      // Set default community if available and not already set (optional now)
+      // Users can work without a default community
       if (userInfo.communities.length > 0 && !communityStore.currentCommunityId) {
         communityStore.setCommunity(userInfo.communities[0].id)
       }
+      console.log('[Router Guard] User info loaded successfully')
     } catch (error) {
       // If failed to get user info, clear auth and redirect to login
-      console.error('Failed to load user info:', error)
+      console.error('[Router Guard] Failed to load user info:', error)
       authStore.clearAuth()
       if (requiresAuth) {
         next({ name: 'Login', query: { redirect: to.fullPath } })
@@ -148,14 +172,18 @@ router.beforeEach(async (to, from, next) => {
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // Redirect to login if not authenticated
+    console.log('[Router Guard] Redirecting to login - not authenticated')
     next({ name: 'Login', query: { redirect: to.fullPath } })
   } else if (requiresSuperuser && !authStore.isSuperuser) {
     // Redirect to dashboard if not superuser
+    console.log('[Router Guard] Redirecting to dashboard - not superuser')
     next({ name: 'Dashboard' })
   } else if (to.name === 'Login' && authStore.isAuthenticated) {
     // Redirect to dashboard if already logged in
+    console.log('[Router Guard] Redirecting to dashboard - already logged in')
     next({ name: 'Dashboard' })
   } else {
+    console.log('[Router Guard] Allowing navigation')
     next()
   }
 })
