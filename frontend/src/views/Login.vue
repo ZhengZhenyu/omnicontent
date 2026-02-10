@@ -102,7 +102,9 @@ const handleLogin = async () => {
 
     // Check if this is the default admin - redirect to initial setup
     if (loginResponse.is_default_admin) {
-      ElMessage.warning('请先完成系统初始化设置')
+      console.log('[Login] Default admin detected, redirecting to initial setup...')
+      // Redirect to initial setup immediately without showing message
+      // The InitialSetup page will show appropriate instructions
       router.push('/initial-setup')
       return
     }
@@ -112,12 +114,13 @@ const handleLogin = async () => {
     authStore.setUser(userInfo.user)
     authStore.setCommunities(userInfo.communities)
 
-    // Step 3: Set default community if available
+    // Step 3: Set community if available
     if (userInfo.communities.length > 0) {
       communityStore.setCommunity(userInfo.communities[0].id)
+      ElMessage.success('登录成功')
+    } else {
+      ElMessage.success('登录成功，请先创建或加入社区')
     }
-
-    ElMessage.success('登录成功')
 
     // Step 4: Redirect to dashboard
     router.push('/')

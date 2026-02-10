@@ -70,6 +70,12 @@ class ChannelConfigOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ChannelConfigCreate(BaseModel):
+    channel: str  # wechat, hugo, csdn, zhihu, ...
+    config: dict = {}
+    enabled: bool = False
+
+
 class ChannelConfigUpdate(BaseModel):
     config: dict = {}
     enabled: Optional[bool] = None

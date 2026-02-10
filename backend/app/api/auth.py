@@ -3,18 +3,15 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import insert, select
 
 from app.core.dependencies import get_current_user, get_current_active_superuser
 from app.core.security import create_access_token, verify_password, get_password_hash
 from app.config import settings
 from app.database import get_db
 from app.models import User
-from app.models.community import Community
-from app.models.user import community_users
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
-    LoginRequest, Token, UserCreate, UserOut, UserWithCommunities,
+    LoginRequest, Token, UserCreate, UserOut, UserInfoResponse,
     InitialSetupRequest, PasswordResetRequest,
     PasswordResetConfirm, SystemStatusResponse,
 )
@@ -129,22 +126,6 @@ def initial_setup(
     db.add(new_admin)
     db.flush()  # Get new_admin.id
 
-    # Transfer community memberships with roles from default admin to new admin
-    # Query existing roles from community_users
-    stmt = select(community_users.c.community_id, community_users.c.role).where(
-        community_users.c.user_id == current_user.id
-    )
-    memberships = db.execute(stmt).fetchall()
-    
-    for community_id, role in memberships:
-        # Add new admin with the same role
-        insert_stmt = insert(community_users).values(
-            user_id=new_admin.id,
-            community_id=community_id,
-            role=role
-        )
-        db.execute(insert_stmt)
-
     # Delete the default admin account
     db.delete(current_user)
 
@@ -161,12 +142,17 @@ def initial_setup(
     }
 
 
-@router.post("/register", response_model=UserWithCommunities, status_code=status.HTTP_201_CREATED)
-def register(user_create: UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def register(
+    user_create: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_superuser),
+):
     """
-    User registration endpoint.
+    User registration endpoint. Only superusers can create new users.
+    Superusers can optionally create other superusers.
 
-    Note: In production, you may want to restrict this endpoint or require admin approval.
+    Note: In production, you may want to require admin approval.
     """
     # Check if username already exists
     existing_user = db.query(User).filter(User.username == user_create.username).first()
@@ -184,6 +170,10 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered",
         )
 
+    # Only superusers can create superuser accounts
+    # Regular users will always have is_superuser=False
+    is_superuser = user_create.is_superuser if current_user.is_superuser else False
+
     # Create new user
     hashed_password = get_password_hash(user_create.password)
     new_user = User(
@@ -192,7 +182,7 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
         full_name=user_create.full_name,
         hashed_password=hashed_password,
         is_active=True,
-        is_superuser=False,
+        is_superuser=is_superuser,
     )
 
     db.add(new_user)
@@ -202,12 +192,37 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.get("/me", response_model=UserWithCommunities)
-def get_current_user_info(current_user: User = Depends(get_current_user)):
+@router.get("/me", response_model=UserInfoResponse)
+def get_current_user_info(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """
-    Get current user information and their accessible communities.
+    Get current user information and their accessible communities with roles.
     """
-    return current_user
+    from app.core.dependencies import get_user_community_role
+    from app.schemas.community import CommunityWithRole
+    
+    # Build communities with roles
+    communities_with_roles = []
+    for community in current_user.communities:
+        role = get_user_community_role(current_user, community.id, db)
+        communities_with_roles.append(
+            CommunityWithRole(
+                id=community.id,
+                name=community.name,
+                slug=community.slug,
+                url=community.url,
+                logo_url=community.logo_url,
+                is_active=community.is_active,
+                role=role or "user",
+            )
+        )
+    
+    return UserInfoResponse(
+        user=current_user,
+        communities=communities_with_roles
+    )
 
 
 @router.get("/users", response_model=list[UserOut])

@@ -8,6 +8,7 @@ class CommunityBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     slug: str = Field(..., min_length=1, max_length=100, pattern="^[a-z0-9-]+$")
     description: Optional[str] = ""
+    url: Optional[str] = None
     logo_url: Optional[str] = None
     settings: Optional[Dict[str, Any]] = {}
 
@@ -19,6 +20,7 @@ class CommunityCreate(CommunityBase):
 class CommunityUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = None
+    url: Optional[str] = None
     logo_url: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
@@ -29,10 +31,16 @@ class CommunityBrief(BaseModel):
     id: int
     name: str
     slug: str
+    url: Optional[str] = None
     logo_url: Optional[str] = None
     is_active: bool
 
     model_config = {"from_attributes": True}
+
+
+class CommunityWithRole(CommunityBrief):
+    """Community info with user's role in it."""
+    role: str  # 'admin' or 'user' or 'superuser' for superusers
 
 
 class CommunityOut(CommunityBase):

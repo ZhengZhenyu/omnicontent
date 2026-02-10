@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import update, select
+from sqlalchemy import update, select, insert
 
 from app.core.dependencies import get_current_user, get_current_active_superuser
 from app.database import get_db
@@ -90,6 +90,16 @@ def create_community(
     # Create new community
     new_community = Community(**community_create.model_dump())
     db.add(new_community)
+    db.flush()
+
+    # Auto-add creator as community admin
+    stmt = insert(community_users).values(
+        user_id=current_user.id,
+        community_id=new_community.id,
+        role='admin'
+    )
+    db.execute(stmt)
+
     db.commit()
     db.refresh(new_community)
 
@@ -144,6 +154,8 @@ def update_community(
     """
     Update community information.
 
+    Only superusers and community admins can update community information.
+
     Args:
         community_id: Community ID
         community_update: Community update data
@@ -154,8 +166,10 @@ def update_community(
         CommunityOut: Updated community
 
     Raises:
-        HTTPException: If community not found or user has no access
+        HTTPException: If community not found or user has no admin access
     """
+    from app.core.dependencies import get_user_community_role
+    
     community = db.query(Community).filter(Community.id == community_id).first()
 
     if not community:
@@ -164,11 +178,12 @@ def update_community(
             detail="Community not found",
         )
 
-    # Check access rights
-    if not current_user.is_superuser and community not in current_user.communities:
+    # Check admin access rights
+    role = get_user_community_role(current_user, community_id, db)
+    if role not in ["superuser", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have access to this community",
+            detail="Community admin permissions required",
         )
 
     # Update fields

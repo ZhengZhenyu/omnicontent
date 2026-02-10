@@ -16,8 +16,10 @@ export interface Community {
   name: string
   slug: string
   description?: string
+  url?: string
   logo_url?: string
   is_active: boolean
+  role?: string  // User's role in this community: 'admin', 'user', or 'superuser'
 }
 
 export const useAuthStore = defineStore('auth', () => {

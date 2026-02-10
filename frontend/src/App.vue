@@ -1,5 +1,11 @@
 <template>
-  <el-container class="app-container">
+  <!-- 未登录页面（登录、忘记密码、重置密码、初始设置）：无侧边栏和顶栏 -->
+  <div v-if="!showLayout" class="fullscreen-container">
+    <router-view />
+  </div>
+
+  <!-- 已登录页面：带侧边栏和顶栏 -->
+  <el-container v-else class="app-container">
     <el-aside width="220px" class="app-aside">
       <div class="logo">
         <el-icon :size="24"><Collection /></el-icon>
@@ -16,6 +22,10 @@
           <el-icon><DataAnalysis /></el-icon>
           <span>仪表板</span>
         </el-menu-item>
+        <el-menu-item index="/community-overview">
+          <el-icon><OfficeBuilding /></el-icon>
+          <span>社区总览</span>
+        </el-menu-item>
         <el-menu-item index="/contents">
           <el-icon><Document /></el-icon>
           <span>内容管理</span>
@@ -24,6 +34,28 @@
           <el-icon><Promotion /></el-icon>
           <span>发布管理</span>
         </el-menu-item>
+        <el-sub-menu index="governance">
+          <template #title>
+            <el-icon><Stamp /></el-icon>
+            <span>社区治理</span>
+          </template>
+          <el-menu-item index="/governance">
+            <el-icon><DataLine /></el-icon>
+            <span>治理概览</span>
+          </el-menu-item>
+          <el-menu-item index="/committees">
+            <el-icon><Avatar /></el-icon>
+            <span>委员会</span>
+          </el-menu-item>
+          <el-menu-item index="/meetings">
+            <el-icon><Calendar /></el-icon>
+            <span>会议管理</span>
+          </el-menu-item>
+          <el-menu-item index="/committees/batch-manage">
+            <el-icon><Upload /></el-icon>
+            <span>批量管理</span>
+          </el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <span>渠道设置</span>
@@ -67,6 +99,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { 
+  Collection, DataAnalysis, Document, Promotion, Setting, 
+  OfficeBuilding, UserFilled, User, Stamp, DataLine, Avatar, 
+  Calendar, Upload 
+} from '@element-plus/icons-vue'
 import { useAuthStore } from './stores/auth'
 import { getUserInfo } from './api/auth'
 import CommunitySwitcher from './components/CommunitySwitcher.vue'
@@ -78,12 +115,19 @@ const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 const isSuperuser = computed(() => authStore.isSuperuser)
 
+// 判断是否显示侧边栏和顶栏布局
+// 登录页、初始设置页、忘记密码页、重置密码页不显示
+const showLayout = computed(() => {
+  const noLayoutRoutes = ['Login', 'InitialSetup', 'ForgotPassword', 'ResetPassword']
+  return !noLayoutRoutes.includes(route.name as string)
+})
+
 onMounted(async () => {
   if (authStore.isAuthenticated && !authStore.user) {
     try {
-      const info = await getUserInfo()
-      authStore.setUser(info.user)
-      authStore.setCommunities(info.communities)
+      const userInfo = await getUserInfo()
+      authStore.setUser(userInfo.user)
+      authStore.setCommunities(userInfo.communities)
     } catch {
       // If failed to get user info, clear auth
     }
@@ -102,6 +146,12 @@ function handleCommand(command: string) {
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.fullscreen-container {
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
 }
 
 .app-container {
