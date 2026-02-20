@@ -37,7 +37,6 @@ Thumbs.db
 # Claude Code
 .claude/
 !.claude/skills/
-!.claude/CLAUDE.md
 *.backup*
 .coverage
 
