@@ -310,7 +310,13 @@ def create_reminder(
         'two_hours': 2,
         'immediate': 0,  # 立即发送
     }
-    
+
+    if reminder_type not in hours_map:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"无效的提醒类型 '{reminder_type}'。可选值: {', '.join(sorted(hours_map.keys()))}",
+        )
+
     hours_before = hours_map.get(reminder_type, 24)
     
     # For immediate reminders, set scheduled_at to now
