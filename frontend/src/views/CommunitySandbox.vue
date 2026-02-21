@@ -837,50 +837,196 @@ function formatTime(dt: string) {
 :deep(.fc) {
   font-family: inherit;
 }
+
+/* 工具栏标题 */
+:deep(.fc-toolbar) {
+  margin-bottom: 16px !important;
+  align-items: center !important;
+}
 :deep(.fc-toolbar-title) {
   font-size: 15px !important;
-  font-weight: 600;
+  font-weight: 700 !important;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
+
+/* 所有按钮基础 */
 :deep(.fc-button) {
-  background: var(--bg-card) !important;
+  background: #fff !important;
   border: 1px solid var(--border) !important;
   color: var(--text-secondary) !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
   padding: 4px 10px !important;
+  border-radius: 7px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+  transition: background 0.13s, border-color 0.13s, color 0.13s !important;
+}
+:deep(.fc-button:hover:not(:disabled)) {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: var(--text-primary) !important;
+}
+:deep(.fc-button.fc-button-active) {
+  background: var(--blue) !important;
+  border-color: var(--blue) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 7px rgba(0,149,255,0.28) !important;
+}
+:deep(.fc-button:focus) { box-shadow: none !important; }
+
+/* 今天按钮 */
+:deep(.fc-today-button) {
+  background: rgba(0,149,255,0.08) !important;
+  border-color: rgba(0,149,255,0.22) !important;
+  color: var(--blue) !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+}
+:deep(.fc-today-button:hover:not(:disabled)) {
+  background: rgba(0,149,255,0.15) !important;
+  border-color: var(--blue) !important;
+}
+
+/* 前/后翻页 */
+:deep(.fc-prev-button),
+:deep(.fc-next-button) {
+  background: transparent !important;
+  border-color: transparent !important;
   box-shadow: none !important;
+  color: var(--text-muted) !important;
+  padding: 4px 7px !important;
 }
-:deep(.fc-button:hover) {
-  background: #f8fafc !important;
+:deep(.fc-prev-button:hover:not(:disabled)),
+:deep(.fc-next-button:hover:not(:disabled)) {
+  background: #f1f5f9 !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 视图切换胶囊 */
+:deep(.fc-button-group) {
+  background: #f1f5f9;
+  border-radius: 9px;
+  padding: 2px;
+  gap: 1px;
+}
+:deep(.fc-button-group .fc-button) {
+  border-radius: 7px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 3px 10px !important;
+  color: var(--text-secondary) !important;
+}
+:deep(.fc-button-group .fc-button:hover:not(:disabled)) {
+  background: rgba(255,255,255,0.65) !important;
+  color: var(--text-primary) !important;
+}
+:deep(.fc-button-group .fc-button.fc-button-active) {
+  background: #fff !important;
   color: var(--blue) !important;
-  border-color: var(--blue) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.09) !important;
+  border: none !important;
 }
-:deep(.fc-button-active) {
-  background: #eff6ff !important;
-  color: var(--blue) !important;
-  border-color: var(--blue) !important;
-}
-:deep(.fc-day-today) {
-  background: #f0f9ff !important;
-}
-:deep(.fc-daygrid-day-number) {
-  font-size: 13px;
-  color: var(--text-secondary);
-  padding: 4px 6px;
+
+/* 表头星期行 */
+:deep(.fc-col-header-cell) {
+  background: #fff !important;
+  border-color: transparent !important;
+  padding: 8px 0 6px !important;
 }
 :deep(.fc-col-header-cell-cushion) {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none !important;
 }
+:deep(.fc-col-header) {
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+/* 日期单元格 */
+:deep(.fc-daygrid-day) {
+  border-color: #f1f5f9 !important;
+  transition: background 0.12s;
+}
+:deep(.fc-daygrid-day:hover:not(.fc-day-today)) {
+  background: #fafbfc;
+}
+:deep(.fc-daygrid-day.fc-day-other .fc-daygrid-day-number) {
+  color: #cbd5e1 !important;
+}
+:deep(.fc-daygrid-day-top) {
+  justify-content: flex-end;
+}
+
+/* 今天单元格 */
+:deep(.fc-day-today) {
+  background: linear-gradient(145deg, rgba(0,149,255,0.07) 0%, rgba(0,149,255,0.01) 100%) !important;
+}
+:deep(.fc-day-today .fc-daygrid-day-number) {
+  background: var(--blue) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  line-height: 24px !important;
+  text-align: center !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 4px 6px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 7px rgba(0,149,255,0.32) !important;
+}
+
+/* 普通日期数字 */
+:deep(.fc-daygrid-day-number) {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  padding: 4px 6px !important;
+  text-decoration: none !important;
+}
+
+/* 事件胶囊 */
 :deep(.fc-event) {
   font-size: 11px;
-  border-radius: 4px;
-  padding: 1px 4px;
-  border: none;
-  cursor: pointer;
+  border-radius: 4px !important;
+  border: none !important;
+  border-left: 3px solid rgba(0,0,0,0.16) !important;
+  padding: 1px 5px !important;
+  margin: 0 3px 2px !important;
+  cursor: pointer !important;
+  transition: transform 0.11s, box-shadow 0.11s !important;
 }
+:deep(.fc-event:hover) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12) !important;
+}
+
+/* "更多"链接 */
+:deep(.fc-daygrid-more-link) {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--blue) !important;
+  background: rgba(0,149,255,0.08);
+  border-radius: 3px;
+  padding: 1px 5px;
+  text-decoration: none !important;
+}
+
+/* 周末轻染色 */
+:deep(.fc-day-sat:not(.fc-day-today)),
+:deep(.fc-day-sun:not(.fc-day-today)) {
+  background: rgba(248,250,252,0.6);
+}
+
 :deep(.fc-daygrid-day-events) {
   min-height: 1.2em;
 }

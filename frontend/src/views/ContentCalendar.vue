@@ -823,149 +823,230 @@ onBeforeUnmount(() => {
 // ==================== FullCalendar 深度样式定制 ====================
 
 .fc {
-  // 头部工具栏
+  font-family: inherit;
+
+  // ── 工具栏 ──────────────────────────────────────────────────────
   .fc-toolbar {
     margin-bottom: 20px !important;
+    align-items: center !important;
+    gap: 8px;
 
     .fc-toolbar-title {
-      font-size: 18px !important;
-      font-weight: 600 !important;
+      font-size: 17px !important;
+      font-weight: 700 !important;
       color: var(--text-primary);
+      letter-spacing: -0.01em;
     }
   }
 
-  // 按钮样式
+  // 所有按钮基础重置
   .fc-button {
-    background: #ffffff !important;
+    background: #fff !important;
     border: 1px solid var(--border) !important;
     color: var(--text-secondary) !important;
     font-size: 13px !important;
-    padding: 6px 14px !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
     font-weight: 500 !important;
-    transition: all 0.15s ease !important;
+    padding: 5px 13px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    transition: background 0.14s, border-color 0.14s, color 0.14s, box-shadow 0.14s !important;
+    line-height: 1.5 !important;
 
-    &:hover {
-      background: #f8fafc !important;
+    &:hover:not(:disabled) {
+      background: #f1f5f9 !important;
       border-color: #cbd5e1 !important;
       color: var(--text-primary) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06) !important;
     }
 
     &.fc-button-active {
       background: var(--blue) !important;
       border-color: var(--blue) !important;
       color: #fff !important;
+      box-shadow: 0 2px 8px rgba(0,149,255,0.28) !important;
     }
 
-    &:focus {
+    &:disabled {
+      opacity: 0.4 !important;
+    }
+
+    &:focus { box-shadow: none !important; }
+  }
+
+  // 前/后翻页按钮：纯图标，无边框
+  .fc-prev-button,
+  .fc-next-button {
+    padding: 5px 9px !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+
+    &:hover:not(:disabled) {
+      background: #f1f5f9 !important;
+      border-color: var(--border) !important;
+      color: var(--text-primary) !important;
       box-shadow: none !important;
     }
   }
 
-  .fc-button-group {
-    .fc-button {
-      border-radius: 0 !important;
+  // 今天按钮：蓝色 ghost
+  .fc-today-button {
+    background: rgba(0,149,255,0.08) !important;
+    border-color: rgba(0,149,255,0.25) !important;
+    color: var(--blue) !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
 
-      &:first-child {
-        border-radius: 8px 0 0 8px !important;
+    &:hover:not(:disabled) {
+      background: rgba(0,149,255,0.14) !important;
+      border-color: var(--blue) !important;
+    }
+  }
+
+  // 视图切换器：胶囊组
+  .fc-button-group {
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+    display: inline-flex;
+    border: none !important;
+    box-shadow: none !important;
+
+    .fc-button {
+      border-radius: 7px !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 4px 12px !important;
+      color: var(--text-secondary) !important;
+
+      &:hover:not(:disabled) {
+        background: rgba(255,255,255,0.7) !important;
+        color: var(--text-primary) !important;
+        box-shadow: none !important;
       }
 
-      &:last-child {
-        border-radius: 0 8px 8px 0 !important;
+      &.fc-button-active {
+        background: #fff !important;
+        color: var(--blue) !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.10) !important;
+        border: none !important;
       }
     }
   }
 
-  // today 按钮
-  .fc-today-button {
-    border-radius: 8px !important;
+  // ── 表头（星期行） ───────────────────────────────────────────────
+  .fc-col-header {
+    border-bottom: 2px solid #e2e8f0 !important;
   }
 
-  // 表头
   .fc-col-header-cell {
-    padding: 10px 0 !important;
-    background: #f8fafc !important;
-    border-color: #f1f5f9 !important;
+    padding: 10px 0 8px !important;
+    background: #fff !important;
+    border-color: transparent !important;
 
     .fc-col-header-cell-cushion {
-      font-weight: 600;
-      color: var(--text-secondary);
-      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.08em;
       text-decoration: none !important;
     }
   }
 
-  // 日期单元格
+  // 周末列轻染色
+  .fc-day-sat .fc-col-header-cell-cushion,
+  .fc-day-sun .fc-col-header-cell-cushion {
+    color: #c4b5fd;
+  }
+
+  // ── 月格单元格 ──────────────────────────────────────────────────
   .fc-daygrid-day {
     border-color: #f1f5f9 !important;
-    transition: background 0.15s;
-    min-height: 100px;
+    transition: background 0.12s;
+    min-height: 110px;
+    vertical-align: top;
 
-    &:hover {
-      background: #f8fafc;
+    &:hover:not(.fc-day-today) {
+      background: #fafbfc;
     }
 
+    // 非当前月日期
+    &.fc-day-other {
+      .fc-daygrid-day-number { color: #cbd5e1 !important; }
+    }
+
+    // 今天
     &.fc-day-today {
-      background: #eff6ff !important;
+      background: linear-gradient(160deg, rgba(0,149,255,0.07) 0%, rgba(0,149,255,0.01) 100%) !important;
 
       .fc-daygrid-day-number {
         background: var(--blue);
         color: #fff !important;
         border-radius: 50%;
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
         padding: 0 !important;
         box-sizing: border-box;
-        line-height: 28px;
+        line-height: 26px;
         text-align: center;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin: 4px 6px;
+        margin: 5px 7px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0,149,255,0.35);
       }
     }
   }
 
   .fc-daygrid-day-number {
     font-size: 13px;
-    color: var(--text-secondary);
-    padding: 6px 8px !important;
+    font-weight: 500;
+    color: #64748b;
+    padding: 5px 8px !important;
     text-decoration: none !important;
+    transition: color 0.12s;
   }
 
-  // 事件样式
+  // 日期顶部 frame
+  .fc-daygrid-day-top {
+    justify-content: flex-end;
+  }
+
+  // ── 事件胶囊 ────────────────────────────────────────────────────
   .fc-event {
-    border-radius: 6px !important;
+    border-radius: 5px !important;
     border: none !important;
-    padding: 2px 6px !important;
-    margin-bottom: 2px !important;
+    border-left: 3px solid rgba(0,0,0,0.18) !important;
+    padding: 0 !important;
+    margin: 0 4px 3px !important;
     font-size: 12px !important;
     cursor: pointer !important;
-    transition: all 0.15s ease;
+    transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s !important;
+    overflow: hidden;
 
     &:hover {
-      opacity: 0.85;
-      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12) !important;
+      opacity: 0.95;
     }
   }
 
   // 自定义事件内容
   .fc-event-custom {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 4px;
+    align-items: stretch;
+    padding: 3px 7px 3px 6px;
     width: 100%;
     overflow: hidden;
+    gap: 0;
 
     .fc-event-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
+      display: none; // 已用左 border 替代
     }
 
     .fc-event-info {
@@ -976,16 +1057,17 @@ onBeforeUnmount(() => {
 
       .fc-event-title {
         font-size: 12px;
-        font-weight: 500;
+        font-weight: 600;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        line-height: 1.4;
+        line-height: 1.5;
+        color: rgba(255,255,255,0.97);
       }
 
       .fc-event-meta {
         font-size: 10px;
-        opacity: 0.85;
+        color: rgba(255,255,255,0.78);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -994,77 +1076,137 @@ onBeforeUnmount(() => {
     }
   }
 
-  // "更多"链接
+  // "更多"气泡链接
   .fc-daygrid-more-link {
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--blue);
-    font-weight: 500;
-    padding: 2px 4px;
+    background: rgba(0,149,255,0.08);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin: 0 4px;
+    text-decoration: none !important;
 
     &:hover {
-      text-decoration: underline;
+      background: rgba(0,149,255,0.16);
     }
   }
 
-  // 时间网格视图
+  // ── 时间网格视图 ─────────────────────────────────────────────────
   .fc-timegrid-slot {
-    height: 48px !important;
+    height: 44px !important;
     border-color: #f1f5f9 !important;
   }
 
-  .fc-timegrid-slot-label-cushion {
-    font-size: 12px;
-    color: var(--text-muted);
+  .fc-timegrid-slot-minor {
+    border-color: #f8fafc !important;
+    border-top-style: dashed !important;
   }
 
-  // 列表视图
+  .fc-timegrid-slot-label-cushion {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .fc-timegrid-col.fc-day-today {
+    background: linear-gradient(180deg, rgba(0,149,255,0.04) 0%, transparent 100%) !important;
+  }
+
+  // ── 列表视图 ─────────────────────────────────────────────────────
   .fc-list {
-    border-radius: 8px;
+    border: none;
+    border-radius: var(--radius);
     overflow: hidden;
 
+    .fc-list-day {
+      th { border: none !important; }
+    }
+
     .fc-list-day-cushion {
-      background: #f8fafc !important;
-      padding: 8px 16px !important;
+      background: linear-gradient(90deg, #f8fafc 0%, #fff 100%) !important;
+      padding: 9px 20px !important;
+      font-size: 12px !important;
+      font-weight: 700;
+      color: var(--text-primary) !important;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .fc-list-event {
       cursor: pointer;
+      transition: background 0.12s;
+
+      td { border-color: #f8fafc !important; }
 
       &:hover td {
-        background: #eff6ff;
+        background: #f0f9ff;
       }
+    }
+
+    .fc-list-event-graphic {
+      padding: 12px 8px 12px 20px !important;
     }
 
     .fc-list-event-dot {
       border-radius: 50%;
+      border-width: 6px !important;
     }
-  }
 
-  // 弹出框（more popover）
-  .fc-popover {
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-hover);
-    border: 1px solid var(--border);
-
-    .fc-popover-header {
-      background: #f8fafc;
-      padding: 10px 14px;
-      font-weight: 600;
+    .fc-list-event-title {
+      font-size: 13px;
+      font-weight: 500;
       color: var(--text-primary);
     }
+
+    .fc-list-event-time {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
   }
 
-  // 选择效果
+  // ── Popover（更多事件展开框） ────────────────────────────────────
+  .fc-popover {
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid rgba(226,232,240,0.8);
+    overflow: hidden;
+
+    .fc-popover-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-primary);
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .fc-popover-body {
+      padding: 6px 8px 8px;
+    }
+  }
+
+  // ── 日期范围选中高亮 ─────────────────────────────────────────────
   .fc-highlight {
-    background: rgba(0, 149, 255, 0.08) !important;
-    border: 2px dashed var(--blue) !important;
+    background: rgba(0, 149, 255, 0.06) !important;
+    border: 2px dashed rgba(0,149,255,0.4) !important;
     border-radius: 6px;
   }
 
-  // 骨架（拖拽时的占位）
+  // ── 拖拽幽灵 ────────────────────────────────────────────────────
   .fc-event-mirror {
-    opacity: 0.6;
-    box-shadow: var(--shadow-hover);
+    opacity: 0.55;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
+    transform: rotate(1deg) scale(1.02);
+  }
+
+  // ── 周末列背景 ──────────────────────────────────────────────────
+  .fc-day-sat,
+  .fc-day-sun {
+    &:not(.fc-day-today) {
+      background: rgba(248,250,252,0.6);
+    }
   }
 }
 
