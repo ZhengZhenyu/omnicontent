@@ -251,7 +251,13 @@ def get_community_dashboard(
     cal_end = now + timedelta(days=60)
     calendar_events: list[CalendarEvent] = []
 
-    # 会议事件（蓝色 #0095ff）
+    # 会议事件：按状态区分颜色
+    # scheduled → 蓝色 #0095ff；completed → 灰色 #94a3b8；cancelled → 浅红 #f87171
+    MEETING_COLORS = {
+        "scheduled": "#0095ff",
+        "completed": "#94a3b8",
+        "cancelled": "#f87171",
+    }
     meeting_events = (
         db.query(Meeting)
         .options(joinedload(Meeting.committee))
@@ -264,13 +270,14 @@ def get_community_dashboard(
     )
     for m in meeting_events:
         committee_name = m.committee.name if m.committee else ""
+        meeting_color = MEETING_COLORS.get(m.status or "scheduled", "#0095ff")
         calendar_events.append(
             CalendarEvent(
                 id=m.id,
-                type="meeting",
+                type=f"meeting_{m.status or 'scheduled'}",
                 title=f"{m.title}" + (f" ({committee_name})" if committee_name else ""),
                 date=m.scheduled_at,
-                color="#0095ff",
+                color=meeting_color,
                 resource_id=m.id,
                 resource_type="meeting",
             )
@@ -304,6 +311,31 @@ def get_community_dashboard(
                         resource_type="content",
                     )
                 )
+
+    # 排期内容事件（橙色 #f59e0b）—— 已设排期但尚未发布的内容
+    scheduled_contents = (
+        db.query(Content)
+        .filter(
+            Content.community_id == community_id,
+            Content.scheduled_publish_at.isnot(None),
+            Content.scheduled_publish_at >= cal_start,
+            Content.scheduled_publish_at <= cal_end,
+            Content.status != "published",
+        )
+        .all()
+    )
+    for sc in scheduled_contents:
+        calendar_events.append(
+            CalendarEvent(
+                id=sc.id,
+                type="scheduled",
+                title=sc.title,
+                date=sc.scheduled_publish_at,  # type: ignore[arg-type]
+                color="#f59e0b",
+                resource_id=sc.id,
+                resource_type="content",
+            )
+        )
 
     # 按日期排序
     calendar_events.sort(key=lambda e: e.date)

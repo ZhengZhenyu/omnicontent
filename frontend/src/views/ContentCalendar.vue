@@ -286,6 +286,20 @@ function formatDate(date: Date | string): string {
   })
 }
 
+/**
+ * 将 FullCalendar 返回的 Date 转为可靠的排期 ISO 字符串。
+ * 从未排期面板拖入月视图时 start 为本地午夜(00:00)，直接 toISOString()
+ * 会因 UTC 偏移导致日期倒退一天（例如 UTC+8 00:00 → UTC 前一天 16:00）。
+ * 统一修正为本地正午(12:00)再序列化，消除时区跨日问题。
+ */
+function toScheduleISO(date: Date): string {
+  const d = new Date(date)
+  if (d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0) {
+    d.setHours(12, 0, 0, 0)
+  }
+  return d.toISOString()
+}
+
 // ==================== 日历配置 ====================
 
 function transformToEvents(items: ContentCalendarItem[]): EventInput[] {
@@ -397,7 +411,7 @@ async function handleEventDrop(info: EventDropArg) {
   }
 
   try {
-    await updateContentSchedule(contentId, newDate.toISOString())
+    await updateContentSchedule(contentId, toScheduleISO(newDate))
     ElMessage.success('发布时间已更新')
   } catch (err: any) {
     info.revert()
@@ -477,7 +491,7 @@ async function handleEventReceive(info: any) {
     return
   }
   try {
-    await updateContentSchedule(contentId, newDate.toISOString())
+    await updateContentSchedule(contentId, toScheduleISO(newDate))
     ElMessage.success(`"${info.event.title}" 已排期`)
     await refetchEvents()
   } catch (err: any) {
@@ -899,13 +913,18 @@ onBeforeUnmount(() => {
 
       .fc-daygrid-day-number {
         background: var(--blue);
-        color: #fff;
+        color: #fff !important;
         border-radius: 50%;
         width: 28px;
         height: 28px;
-        display: flex;
+        padding: 0 !important;
+        box-sizing: border-box;
+        line-height: 28px;
+        text-align: center;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        margin: 4px 6px;
       }
     }
   }

@@ -72,7 +72,7 @@ class UpcomingMeetingItem(BaseModel):
 class CalendarEvent(BaseModel):
     """日历视图事件"""
     id: int
-    type: str            # meeting / publish / member_join
+    type: str            # meeting_scheduled / meeting_completed / meeting_cancelled / publish / scheduled
     title: str
     date: datetime
     color: str           # 前端渲染色值
