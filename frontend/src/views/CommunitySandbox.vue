@@ -525,17 +525,29 @@ function formatTime(dt: string) {
   align-items: center;
   gap: 16px;
 }
-.community-logo img {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  object-fit: cover;
+.community-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: #fff;
   border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.community-logo img {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: contain;
 }
 .community-logo-placeholder {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
   background: linear-gradient(135deg, var(--blue), var(--dark-blue));
   color: #fff;
   display: flex;
