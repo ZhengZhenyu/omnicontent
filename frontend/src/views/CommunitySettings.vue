@@ -357,7 +357,6 @@ watch(() => communityId.value, async (val) => {
             </el-form-item>
           </el-form>
           <el-alert v-if="!canEditBasic" type="info" :closable="false" title="您需要社区管理员权限才能编辑基本信息" />
-        </div>
       </div>
 
       <!-- Tab 2: 渠道配置 (superuser only) -->
@@ -388,7 +387,6 @@ watch(() => communityId.value, async (val) => {
             </el-table-column>
           </el-table>
           <el-empty v-if="channelList.length === 0" description="暂无渠道配置" />
-        </div>
       </div>
 
       <!-- Tab 3: 邮件设置 (superuser only) -->
@@ -436,7 +434,6 @@ watch(() => communityId.value, async (val) => {
               <el-button type="primary" :loading="savingEmail" @click="saveEmailSettings">保存设置</el-button>
             </el-form-item>
           </el-form>
-        </div>
       </div>
 
       <!-- Tab 4: 成员管理 -->
@@ -484,7 +481,6 @@ watch(() => communityId.value, async (val) => {
               </template>
             </el-table-column>
           </el-table>
-        </div>
       </div>
 
       <!-- Tab 5: 危险操作 (superuser only) -->
@@ -504,7 +500,6 @@ watch(() => communityId.value, async (val) => {
               </el-button>
             </div>
           </div>
-        </div>
       </div>
 
     </div>
