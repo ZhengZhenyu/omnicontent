@@ -240,6 +240,18 @@ const STATUS_COLORS: Record<string, string> = {
   published: '#67C23A',
 }
 
+// 浅色调背景色（chip 风格）
+const STATUS_PASTELS: Record<string, string> = {
+  draft:     '#f1f5f9',
+  reviewing: '#fff8ed',
+  approved:  '#eff6ff',
+  published: '#f0faf4',
+}
+
+function getStatusPastel(status: string): string {
+  return STATUS_PASTELS[status] || '#f1f5f9'
+}
+
 const STATUS_LABELS: Record<string, string> = {
   draft: '草稿',
   reviewing: '审核中',
@@ -310,9 +322,9 @@ function transformToEvents(items: ContentCalendarItem[]): EventInput[] {
       title: item.title,
       start: item.scheduled_publish_at!,
       allDay: false,
-      backgroundColor: getStatusColor(item.status),
+      backgroundColor: getStatusPastel(item.status),
       borderColor: getStatusColor(item.status),
-      textColor: '#fff',
+      textColor: '#1e293b',
       extendedProps: {
         status: item.status,
         source_type: item.source_type,
@@ -474,9 +486,9 @@ function initDraggable() {
       return {
         id: String(data.id),
         title: data.title,
-        backgroundColor: getStatusColor(data.status),
+        backgroundColor: getStatusPastel(data.status),
         borderColor: getStatusColor(data.status),
-        textColor: '#fff',
+        textColor: '#1e293b',
         extendedProps: { ...data },
       }
     },
@@ -505,13 +517,13 @@ function renderEventContent(arg: any) {
   const author = arg.event.extendedProps.author
   const timeText = arg.timeText
 
+  const accentColor = getStatusColor(status)
   return {
     html: `
-      <div class="fc-event-custom">
-        <div class="fc-event-dot" style="background:${getStatusColor(status)}"></div>
+      <div class="fc-event-custom" style="border-left-color:${accentColor}">
         <div class="fc-event-info">
           <span class="fc-event-title">${arg.event.title}</span>
-          <span class="fc-event-meta">${author ? author : ''}${timeText ? ' · ' + timeText : ''}</span>
+          ${author || timeText ? `<span class="fc-event-meta" style="color:${accentColor}">${author ? author : ''}${timeText ? ' · ' + timeText : ''}</span>` : ''}
         </div>
       </div>
     `,
@@ -1013,36 +1025,35 @@ onBeforeUnmount(() => {
     justify-content: flex-end;
   }
 
-  // ── 事件胶囊 ────────────────────────────────────────────────────
+  // ── 事件胶囊（chip 风格：浅色底 + 有色左边框 + 深色文字）────────
   .fc-event {
     border-radius: 5px !important;
-    border: none !important;
-    border-left: 3px solid rgba(0,0,0,0.18) !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    border-left-width: 3px !important;
     padding: 0 !important;
     margin: 0 4px 3px !important;
     font-size: 12px !important;
     cursor: pointer !important;
-    transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s !important;
+    transition: transform 0.12s, box-shadow 0.12s !important;
     overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.12) !important;
-      opacity: 0.95;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
     }
   }
 
   // 自定义事件内容
   .fc-event-custom {
     display: flex;
-    align-items: stretch;
-    padding: 3px 7px 3px 6px;
+    align-items: center;
+    padding: 3px 7px;
     width: 100%;
     overflow: hidden;
-    gap: 0;
 
     .fc-event-dot {
-      display: none; // 已用左 border 替代
+      display: none;
     }
 
     .fc-event-info {
@@ -1058,16 +1069,16 @@ onBeforeUnmount(() => {
         text-overflow: ellipsis;
         white-space: nowrap;
         line-height: 1.5;
-        color: rgba(255,255,255,0.97);
+        color: #1e293b;
       }
 
       .fc-event-meta {
         font-size: 10px;
-        color: rgba(255,255,255,0.78);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         line-height: 1.3;
+        font-weight: 500;
       }
     }
   }
