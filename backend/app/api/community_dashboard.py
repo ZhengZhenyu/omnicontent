@@ -133,12 +133,12 @@ def get_community_dashboard(
     metrics = CommunityMetrics(
         total_contents=total_contents,
         published_contents=published_contents,
-        pending_review_contents=pending_review_contents,
+        reviewing_contents=pending_review_contents,
         draft_contents=draft_contents,
-        committees_count=committees_count,
-        members_count=members_count,
-        upcoming_meetings_count=upcoming_meetings_count,
-        active_channels_count=active_channels_count,
+        total_committees=committees_count,
+        total_members=members_count,
+        upcoming_meetings=upcoming_meetings_count,
+        active_channels=active_channels_count,
     )
 
     # ── 2. 发布趋势（近 6 个月）──────────────────────────────────────────
@@ -305,34 +305,6 @@ def get_community_dashboard(
                     )
                 )
 
-    # 成员加入事件（橙色 #f59e0b）
-    member_join_rows = db.execute(
-        select(
-            community_users.c.user_id,
-            community_users.c.joined_at,
-        ).where(
-            community_users.c.community_id == community_id,
-            community_users.c.joined_at >= cal_start,
-            community_users.c.joined_at <= cal_end,
-        )
-    ).all()
-    for user_id, joined_at in member_join_rows:
-        if joined_at:
-            member = db.query(User).filter(User.id == user_id).first()
-            if member:
-                display_name = member.full_name or member.username
-                calendar_events.append(
-                    CalendarEvent(
-                        id=user_id,
-                        type="member_join",
-                        title=f"{display_name} 加入社区",
-                        date=joined_at,
-                        color="#f59e0b",
-                        resource_id=user_id,
-                        resource_type="user",
-                    )
-                )
-
     # 按日期排序
     calendar_events.sort(key=lambda e: e.date)
 
@@ -351,7 +323,7 @@ def get_community_dashboard(
         community_name=community.name,
         community_logo=community.logo_url,
         metrics=metrics,
-        publish_trend=publish_trend,
+        monthly_trend=publish_trend,
         channel_stats=channel_stats,
         recent_contents=recent_contents,
         upcoming_meetings=upcoming_meetings,

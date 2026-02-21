@@ -124,15 +124,6 @@
               <div class="metric-label">委员会</div>
             </div>
           </div>
-          <div class="metric-card" @click="$router.push('/communities')">
-            <div class="metric-icon-wrap member-icon">
-              <el-icon><UserFilled /></el-icon>
-            </div>
-            <div class="metric-body">
-              <div class="metric-value">{{ dashboardData.metrics.total_members }}</div>
-              <div class="metric-label">成员数</div>
-            </div>
-          </div>
           <div class="metric-card highlight-blue" @click="$router.push('/meetings')">
             <div class="metric-icon-wrap meeting-icon">
               <el-icon><Calendar /></el-icon>
@@ -262,7 +253,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import type { CalendarOptions } from '@fullcalendar/core'
 import {
-  Document, Promotion, Clock, EditPen, Stamp, UserFilled,
+  Document, Promotion, Clock, EditPen, Stamp,
   Calendar, Connection, Plus, Setting,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
@@ -298,7 +289,7 @@ const isCurrentCommunityAdmin = computed(() =>
 const isNewCommunity = computed(() => {
   if (!dashboardData.value) return false
   const m = dashboardData.value.metrics
-  return (m.total_contents || 0) === 0 && (m.total_members || 0) <= 1
+  return (m.total_contents || 0) === 0
 })
 
 // ===== 数据加载 =====
@@ -525,17 +516,29 @@ function formatTime(dt: string) {
   align-items: center;
   gap: 16px;
 }
-.community-logo img {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  object-fit: cover;
+.community-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: #fff;
   border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.community-logo img {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: contain;
 }
 .community-logo-placeholder {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
   background: linear-gradient(135deg, var(--blue), var(--dark-blue));
   color: #fff;
   display: flex;

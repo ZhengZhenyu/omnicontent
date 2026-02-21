@@ -320,11 +320,18 @@ watch(() => communityId.value, async (val) => {
       </div>
     </div>
 
-    <el-tabs v-model="activeTab" class="settings-tabs">
+    <div class="settings-card">
+      <!-- 自定义 Tab 导航 -->
+      <nav class="settings-tabs-nav">
+        <button class="tab-nav-item" :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基本信息</button>
+        <button v-if="authStore.isSuperuser" class="tab-nav-item" :class="{ active: activeTab === 'channels' }" @click="activeTab = 'channels'">渠道配置</button>
+        <button v-if="authStore.isSuperuser" class="tab-nav-item" :class="{ active: activeTab === 'email' }" @click="activeTab = 'email'">邮件设置</button>
+        <button class="tab-nav-item" :class="{ active: activeTab === 'members' }" @click="activeTab = 'members'">成员管理</button>
+        <button v-if="authStore.isSuperuser" class="tab-nav-item danger-tab" :class="{ active: activeTab === 'danger' }" @click="activeTab = 'danger'">危险操作</button>
+      </nav>
 
       <!-- Tab 1: 基本信息 -->
-      <el-tab-pane label="基本信息" name="basic">
-        <div class="tab-body">
+      <div v-show="activeTab === 'basic'" class="tab-body">
           <el-form ref="basicFormRef" :model="basicForm" :rules="basicRules" label-width="90px" :disabled="!canEditBasic">
             <el-form-item label="社区名称" prop="name">
               <el-input v-model="basicForm.name" maxlength="60" show-word-limit />
@@ -350,12 +357,10 @@ watch(() => communityId.value, async (val) => {
             </el-form-item>
           </el-form>
           <el-alert v-if="!canEditBasic" type="info" :closable="false" title="您需要社区管理员权限才能编辑基本信息" />
-        </div>
-      </el-tab-pane>
+      </div>
 
       <!-- Tab 2: 渠道配置 (superuser only) -->
-      <el-tab-pane v-if="authStore.isSuperuser" label="渠道配置" name="channels">
-        <div class="tab-body">
+      <div v-show="activeTab === 'channels'" class="tab-body">
           <div class="tab-toolbar">
             <el-button type="primary" size="small" @click="openChannelDialog(null)">
               <el-icon><Plus /></el-icon> 添加渠道
@@ -382,12 +387,10 @@ watch(() => communityId.value, async (val) => {
             </el-table-column>
           </el-table>
           <el-empty v-if="channelList.length === 0" description="暂无渠道配置" />
-        </div>
-      </el-tab-pane>
+      </div>
 
       <!-- Tab 3: 邮件设置 (superuser only) -->
-      <el-tab-pane v-if="authStore.isSuperuser" label="邮件设置" name="email">
-        <div class="tab-body">
+      <div v-show="activeTab === 'email'" class="tab-body">
           <el-form label-width="110px">
             <el-form-item label="启用邮件">
               <el-switch v-model="emailForm.enabled" />
@@ -431,12 +434,10 @@ watch(() => communityId.value, async (val) => {
               <el-button type="primary" :loading="savingEmail" @click="saveEmailSettings">保存设置</el-button>
             </el-form-item>
           </el-form>
-        </div>
-      </el-tab-pane>
+      </div>
 
       <!-- Tab 4: 成员管理 -->
-      <el-tab-pane label="成员管理" name="members">
-        <div class="tab-body">
+      <div v-show="activeTab === 'members'" class="tab-body">
           <div class="tab-toolbar" v-if="canEditBasic">
             <el-select
               v-model="selectedAddUserId"
@@ -480,12 +481,10 @@ watch(() => communityId.value, async (val) => {
               </template>
             </el-table-column>
           </el-table>
-        </div>
-      </el-tab-pane>
+      </div>
 
       <!-- Tab 5: 危险操作 (superuser only) -->
-      <el-tab-pane v-if="authStore.isSuperuser" label="危险操作" name="danger">
-        <div class="tab-body">
+      <div v-show="activeTab === 'danger'" class="tab-body">
           <div class="danger-zone">
             <div class="danger-header">
               <el-icon color="#ef4444"><WarningFilled /></el-icon>
@@ -501,10 +500,9 @@ watch(() => communityId.value, async (val) => {
               </el-button>
             </div>
           </div>
-        </div>
-      </el-tab-pane>
+      </div>
 
-    </el-tabs>
+    </div>
 
     <!-- Channel dialog -->
     <el-dialog v-model="channelDialogVisible" :title="editingChannel ? '编辑渠道' : '添加渠道'" width="480px">
@@ -567,6 +565,47 @@ watch(() => communityId.value, async (val) => {
 }
 .settings-tabs { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow: hidden; }
 .tab-body { padding: 24px; }
+/* ==== 自定义 Tab 导航 ==== */
+.settings-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+.settings-tabs-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+}
+.tab-nav-item {
+  position: relative;
+  padding: 14px 18px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  outline: none;
+}
+.tab-nav-item:hover { color: #1e293b; }
+.tab-nav-item.active {
+  color: #0095ff;
+  border-bottom-color: #0095ff;
+}
+.tab-nav-item.danger-tab { color: #94a3b8; }
+.tab-nav-item.danger-tab:hover { color: #ef4444; }
+.tab-nav-item.danger-tab.active {
+  color: #ef4444;
+  border-bottom-color: #ef4444;
+}
 .tab-toolbar { margin-bottom: 16px; display: flex; gap: 8px; align-items: center; }
 .field-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 .channel-table { width: 100%; }

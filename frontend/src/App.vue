@@ -6,13 +6,16 @@
 
   <!-- 已登录页面：带侧边栏和顶栏 -->
   <el-container v-else class="app-container">
-    <el-aside width="220px" class="app-aside">
+    <el-aside :width="sidebarCollapsed ? '64px' : '220px'" class="app-aside" :class="{ collapsed: sidebarCollapsed }">
       <div class="logo">
-        <img src="/openGecko-Horizontal.png" alt="openGecko" class="logo-img" />
+        <img v-if="!sidebarCollapsed" src="/openGecko-Horizontal.png" alt="openGecko" class="logo-img" />
+        <img v-else src="/openGecko.jpg" alt="openGecko" class="logo-icon" />
       </div>
       <el-menu
         :default-active="route.path"
         router
+        :collapse="sidebarCollapsed"
+        :collapse-transition="false"
         background-color="#ffffff"
         text-color="#64748b"
         active-text-color="#0095ff"
@@ -97,6 +100,16 @@
         </template>
       </el-menu>
     </el-aside>
+    <!-- 收缩切换按钮（悬浮在侧边栏右侧边缘） -->
+    <button
+      class="sidebar-toggle"
+      :style="{ left: (sidebarCollapsed ? 64 : 220) - 12 + 'px' }"
+      @click="toggleSidebar"
+      :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+    >
+      <svg v-if="sidebarCollapsed" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <el-container>
       <el-header class="app-header">
         <community-switcher v-if="showCommunitySwitcher" />
@@ -124,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   DataAnalysis, Document, Promotion, Setting,
@@ -143,6 +156,13 @@ const communityStore = useCommunityStore()
 
 const user = computed(() => authStore.user)
 const isSuperuser = computed(() => authStore.isSuperuser)
+
+// 侧边栏收缩状态（持久化到 localStorage）
+const sidebarCollapsed = ref(localStorage.getItem('sidebar_collapsed') === 'true')
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+  localStorage.setItem('sidebar_collapsed', String(sidebarCollapsed.value))
+}
 const isAdminInCurrentCommunity = computed(() => {
   const cid = communityStore.currentCommunityId
   return cid ? authStore.isAdminInCommunity(cid) : false
@@ -221,7 +241,12 @@ body {
 .app-aside {
   background-color: #ffffff;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid #e2e8f0;
+  transition: width 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .app-aside::-webkit-scrollbar {
@@ -244,12 +269,20 @@ body {
   padding: 20px 16px;
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
+  min-height: 64px;
+  flex-shrink: 0;
 }
 
 .logo-img {
   width: 100%;
   max-width: 180px;
   height: auto;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .app-header {
@@ -292,6 +325,37 @@ body {
 
 .el-menu {
   border-right: none !important;
+  flex: 1;
+}
+
+/* 取消 el-menu collapse 模式的固定宽度限制 */
+.app-aside.collapsed .el-menu--collapse {
+  width: 64px !important;
+}
+
+/* 收缩切换按钮（悬浮右边缘圆形按钮） */
+.sidebar-toggle {
+  position: fixed;
+  top: 72px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 0;
+  transition: left 0.22s ease, color 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.sidebar-toggle:hover {
+  color: #0095ff;
+  border-color: #0095ff;
+  box-shadow: 0 2px 8px rgba(0, 149, 255, 0.18);
 }
 
 /* LFX-style sidebar menu items */
