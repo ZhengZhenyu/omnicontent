@@ -430,3 +430,43 @@ pytest --cov=app --cov-report=term-missing -q 2>&1 | grep -E "[0-9]+%"
 ```
 
 找到覆盖率低的模块后，优先针对**纯函数**和**独立服务类**补充单元测试（无需 HTTP client，速度快，覆盖率提升效果好）。
+
+### 前后端 Schema 字段名一致性原则
+
+**问题根源**：后端 Pydantic schema 字段名与前端 TypeScript interface 字段名不一致时，API 返回的 JSON 中字段存在但前端读取到 `undefined`，导致页面显示空白甚至卡住（如骨架屏不消失）。这类 bug 不会有 console 报错，极难排查。
+
+**黄金规则：以前端 interface 为准，后端 schema 字段名必须与前端保持一致。**
+
+#### 处理原则
+
+1. **新建 schema 前先看前端**：在 `backend/app/schemas/` 创建新 schema 前，先查阅 `frontend/src/api/` 对应的接口定义，确保字段名完全匹配。
+
+2. **命名风格统一**：
+   - ✅ 用描述性名词：`reviewing_contents`、`total_members`、`upcoming_meetings`
+   - ❌ 避免冗余后缀：`pending_review_contents`（语义不明）、`members_count`（和 `total_members` 混用）、`upcoming_meetings_count` vs `upcoming_meetings`
+   - ❌ 避免 `_count`/`_counts` 后缀与 `total_` 前缀混用
+
+3. **顶层响应字段名**：
+   - ✅ `monthly_trend`（和前端一致）
+   - ❌ `publish_trend`（前端叫 `monthly_trend` 时后端不能用 `publish_trend`）
+
+4. **修改时同步更新测试**：修改 schema 字段名后，必须同步更新 `tests/` 中对该字段的断言，否则 CI 会失败。
+
+5. **排查卡住/空白页面的检查清单**：
+   ```bash
+   # 1. 直接调用后端 API，印出字段名
+   curl -H "Authorization: Bearer TOKEN" http://localhost:8000/api/xxx | python3 -m json.tool | grep -E '"[a-z_]+":' | head -20
+   # 2. 对比前端 api/*.ts 中对应 interface 的字段定义
+   # 3. 列出所有不一致的字段名，修改后端 schema 和 API 构造调用
+   ```
+
+#### 典型错误对照表
+
+| 前端 interface | 错误的后端字段 | 正确后端字段 |
+|---|---|---|
+| `reviewing_contents` | `pending_review_contents` | `reviewing_contents` |
+| `total_committees` | `committees_count` | `total_committees` |
+| `total_members` | `members_count` | `total_members` |
+| `upcoming_meetings` | `upcoming_meetings_count` | `upcoming_meetings` |
+| `active_channels` | `active_channels_count` | `active_channels` |
+| `monthly_trend` | `publish_trend` | `monthly_trend` |
