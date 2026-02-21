@@ -167,9 +167,11 @@
           <div class="card-header">
             <h3>社区事件日历</h3>
             <div class="calendar-legend">
-              <span class="legend-dot meeting-dot"></span><span class="legend-text">会议</span>
-              <span class="legend-dot publish-dot"></span><span class="legend-text">内容发布</span>
-              <span class="legend-dot member-dot"></span><span class="legend-text">成员活动</span>
+              <span class="legend-dot meeting-scheduled-dot"></span><span class="legend-text">待召开</span>
+              <span class="legend-dot meeting-completed-dot"></span><span class="legend-text">已完成</span>
+              <span class="legend-dot meeting-cancelled-dot"></span><span class="legend-text">已取消</span>
+              <span class="legend-dot publish-dot"></span><span class="legend-text">已发布</span>
+              <span class="legend-dot scheduled-dot"></span><span class="legend-text">排期中</span>
             </div>
           </div>
           <FullCalendar ref="calendarRef" :options="calendarOptions" class="community-calendar" />
@@ -713,9 +715,11 @@ function formatTime(dt: string) {
   height: 8px;
   border-radius: 50%;
 }
-.meeting-dot { background: #0095ff; }
-.publish-dot  { background: #10b981; }
-.member-dot   { background: #f59e0b; }
+.meeting-scheduled-dot  { background: #0095ff; }
+.meeting-completed-dot  { background: #94a3b8; }
+.meeting-cancelled-dot  { background: #f87171; }
+.publish-dot            { background: #10b981; }
+.scheduled-dot          { background: #f59e0b; }
 .legend-text {
   font-size: 12px;
   color: var(--text-secondary);
