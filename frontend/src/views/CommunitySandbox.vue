@@ -77,7 +77,22 @@
             <el-button v-else size="small" disabled>请联系超管完成配置</el-button>
           </div>
         </div>
-        <!-- 第一层：8 指标卡片 (2行x4列) -->
+        <!-- 第一层：社区事件日历（全宽，置顶） -->
+        <div class="section-card calendar-card">
+          <div class="card-header">
+            <h3>社区事件日历</h3>
+            <div class="calendar-legend">
+              <span class="legend-dot meeting-scheduled-dot"></span><span class="legend-text">待召开</span>
+              <span class="legend-dot meeting-completed-dot"></span><span class="legend-text">已完成</span>
+              <span class="legend-dot meeting-cancelled-dot"></span><span class="legend-text">已取消</span>
+              <span class="legend-dot publish-dot"></span><span class="legend-text">已发布</span>
+              <span class="legend-dot scheduled-dot"></span><span class="legend-text">排期中</span>
+            </div>
+          </div>
+          <FullCalendar ref="calendarRef" :options="calendarOptions" class="community-calendar" />
+        </div>
+
+        <!-- 第二层：8 指标卡片 (2行x4列) -->
         <div class="metrics-grid">
           <div class="metric-card" @click="$router.push('/contents')">
             <div class="metric-icon-wrap content-icon">
@@ -144,7 +159,7 @@
           </div>
         </div>
 
-        <!-- 第二层：趋势图 + 渠道统计 -->
+        <!-- 第三层：趋势图 + 渠道统计 -->
         <div class="charts-row">
           <div class="chart-card">
             <div class="card-header">
@@ -160,21 +175,6 @@
             </div>
             <v-chart class="chart" :option="channelChartOption" autoresize />
           </div>
-        </div>
-
-        <!-- 第三层：社区事件日历（全宽） -->
-        <div class="section-card calendar-card">
-          <div class="card-header">
-            <h3>社区事件日历</h3>
-            <div class="calendar-legend">
-              <span class="legend-dot meeting-scheduled-dot"></span><span class="legend-text">待召开</span>
-              <span class="legend-dot meeting-completed-dot"></span><span class="legend-text">已完成</span>
-              <span class="legend-dot meeting-cancelled-dot"></span><span class="legend-text">已取消</span>
-              <span class="legend-dot publish-dot"></span><span class="legend-text">已发布</span>
-              <span class="legend-dot scheduled-dot"></span><span class="legend-text">排期中</span>
-            </div>
-          </div>
-          <FullCalendar ref="calendarRef" :options="calendarOptions" class="community-calendar" />
         </div>
 
         <!-- 第四层：最近内容 + 即将事件 -->
