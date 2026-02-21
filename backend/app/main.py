@@ -68,13 +68,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             return [make_serializable(i) for i in obj]
         if isinstance(obj, Exception):
             return str(obj)
-        # Ensure any non-JSON-serializable type falls back to str
-        try:
-            import json
-            json.dumps(obj)
+        # 直接类型判断替代 json.dumps try/except，避免每次序列化对象带来开销
+        if isinstance(obj, (str, int, float, bool)) or obj is None:
             return obj
-        except (TypeError, ValueError):
-            return str(obj)
+        return str(obj)
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

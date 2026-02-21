@@ -76,14 +76,13 @@ def create_content(
     )
     db.add(content)
     db.flush()  # Get content ID
-    
-    # Assign assignees (default to creator if empty)
+
+    # Assign assignees (default to creator if empty) — batch query to avoid N+1
     assignee_ids = data.assignee_ids if data.assignee_ids else [current_user.id]
-    for user_id in assignee_ids:
-        user = db.query(User).filter(User.id == user_id).first()
-        if user:
-            content.assignees.append(user)
-    
+    assignee_users = db.query(User).filter(User.id.in_(assignee_ids)).all()
+    for user in assignee_users:
+        content.assignees.append(user)
+
     db.commit()
     db.refresh(content)
     return content
@@ -136,9 +135,10 @@ def update_content(
     if "assignee_ids" in update_data:
         assignee_ids = update_data.pop("assignee_ids")
         content.assignees.clear()
-        for user_id in assignee_ids:
-            user = db.query(User).filter(User.id == user_id).first()
-            if user:
+        # Batch query to avoid N+1 when updating assignees
+        if assignee_ids:
+            assignee_users = db.query(User).filter(User.id.in_(assignee_ids)).all()
+            for user in assignee_users:
                 content.assignees.append(user)
     
     if "content_markdown" in update_data:

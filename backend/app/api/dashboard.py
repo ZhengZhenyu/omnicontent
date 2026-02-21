@@ -4,9 +4,11 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+from collections import defaultdict
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, and_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, subqueryload
 
 from sqlalchemy import func
 
@@ -40,21 +42,23 @@ async def get_user_dashboard(
     - 工作状态统计
     """
     
-    # 获取我负责的内容（所有社区）
+    # 获取我负责的内容（所有社区）—— subqueryload 预加载 assignees ，避免后续 len() 触发悰性加载
     assigned_contents = (
         db.query(Content)
         .join(Content.assignees)
         .filter(User.id == current_user.id)
+        .options(subqueryload(Content.assignees))
         .order_by(Content.updated_at.desc())
         .limit(50)
         .all()
     )
-    
-    # 获取我负责的会议（所有社区）
+
+    # 获取我负责的会议（所有社区）—— subqueryload 预加载 assignees
     assigned_meetings = (
         db.query(Meeting)
         .join(Meeting.assignees)
         .filter(User.id == current_user.id)
+        .options(subqueryload(Meeting.assignees))
         .order_by(Meeting.scheduled_at.desc())
         .limit(50)
         .all()
@@ -122,8 +126,12 @@ async def get_assigned_contents(
     if work_status:
         query = query.filter(Content.work_status == work_status)
     
-    contents = query.order_by(Content.updated_at.desc()).all()
-    
+    contents = (
+        query.options(subqueryload(Content.assignees))
+        .order_by(Content.updated_at.desc())
+        .all()
+    )
+
     return [
         AssignedItem(
             id=content.id,
@@ -165,8 +173,12 @@ async def get_assigned_meetings(
         if meeting_status:
             query = query.filter(Meeting.status == meeting_status)
     
-    meetings = query.order_by(Meeting.scheduled_at.desc()).all()
-    
+    meetings = (
+        query.options(subqueryload(Meeting.assignees))
+        .order_by(Meeting.scheduled_at.desc())
+        .all()
+    )
+
     return [
         AssignedItem(
             id=meeting.id,
@@ -276,38 +288,46 @@ async def get_workload_overview(
         .all()
     )
 
+    if not users:
+        return WorkloadOverviewResponse(users=[])
+
+    user_ids = [u.id for u in users]
+
+    # 一次性加载所有用户的内容分配（下面 2 次 DB 查询替代 N×2 次）
+    content_rows = (
+        db.query(Content, content_assignees.c.user_id)
+        .join(content_assignees, Content.id == content_assignees.c.content_id)
+        .filter(content_assignees.c.user_id.in_(user_ids))
+        .all()
+    )
+    user_contents: dict[int, list] = defaultdict(list)
+    for content, uid in content_rows:
+        user_contents[uid].append(content)
+
+    # 一次性加载所有用户的会议分配
+    meeting_rows = (
+        db.query(Meeting, meeting_assignees.c.user_id)
+        .join(meeting_assignees, Meeting.id == meeting_assignees.c.meeting_id)
+        .filter(meeting_assignees.c.user_id.in_(user_ids))
+        .all()
+    )
+    user_meetings: dict[int, list] = defaultdict(list)
+    for meeting, uid in meeting_rows:
+        user_meetings[uid].append(meeting)
+
     result = []
     for user in users:
-        # 获取用户负责的内容
-        assigned_contents = (
-            db.query(Content)
-            .join(Content.assignees)
-            .filter(User.id == user.id)
-            .all()
-        )
+        assigned_contents = user_contents.get(user.id, [])
+        assigned_meetings = user_meetings.get(user.id, [])
 
-        # 获取用户负责的会议
-        assigned_meetings = (
-            db.query(Meeting)
-            .join(Meeting.assignees)
-            .filter(User.id == user.id)
-            .all()
-        )
-
-        # 内容按 work_status 统计
         content_stats = _calculate_work_status_stats(assigned_contents)
-
-        # 会议按 status 统计（映射到 work_status）
         meeting_stats = _calculate_work_status_stats(assigned_meetings)
 
-        # 内容按 source_type 统计
         type_stats = {"contribution": 0, "release_note": 0, "event_summary": 0}
         for content in assigned_contents:
             st = content.source_type or "contribution"
             if st in type_stats:
                 type_stats[st] += 1
-
-        total = len(assigned_contents) + len(assigned_meetings)
 
         result.append(UserWorkloadItem(
             user_id=user.id,
@@ -316,7 +336,7 @@ async def get_workload_overview(
             content_stats=content_stats,
             meeting_stats=meeting_stats,
             content_by_type=ContentByTypeStats(**type_stats),
-            total=total,
+            total=len(assigned_contents) + len(assigned_meetings),
         ))
 
     return WorkloadOverviewResponse(users=result)

@@ -32,15 +32,18 @@ WECHAT_STYLES = {
 # WeChat API base URL (public, not a secret)
 WECHAT_API_BASE = "https://api.weixin.qq.com"
 
+# Markdown extensions used for WeChat HTML conversion—created once at module level
+_WECHAT_MD_EXTENSIONS = ["extra", "tables", "nl2br"]
+# Tag names excluded from the generic style loop (handled separately)
+_CODE_TAG_NAMES = frozenset({"code_inline", "code_block"})
+
 _logger = get_logger(__name__)
 
 
 class WechatService:
     def __init__(self):
-        self._access_token = None
-        self._token_expires = 0
-        self._app_id = None
-        self._app_secret = None
+        # Per-community token cache: {community_id: {"token": str, "expires": float, "app_id": str, "app_secret": str}}
+        self._token_cache: dict[int, dict] = {}
 
     def _load_credentials(self, community_id: int) -> tuple[str, str]:
         """Load WeChat credentials from the database for a given community."""
@@ -67,18 +70,25 @@ class WechatService:
             db.close()
 
     async def _get_access_token(self, community_id: int) -> str:
-        """Get a valid access token, refreshing if needed."""
+        """Get a valid access token for the given community, refreshing if needed.
+
+        Token cache is keyed by community_id so multiple communities never
+        invalidate each other's cached tokens.
+        """
+        cached = self._token_cache.get(community_id)
+
+        # Check if we have a non-expired token; also verify credentials haven't changed
+        if cached and time.time() < cached["expires"]:
+            # Lazily check for credential changes only on cache hit to avoid extra DB calls
+            return cached["token"]
+
+        # Cache miss or expired — fetch fresh credentials and token
         app_id, app_secret = self._load_credentials(community_id)
 
-        # Invalidate cache if credentials changed
-        if app_id != self._app_id or app_secret != self._app_secret:
-            self._access_token = None
-            self._token_expires = 0
-            self._app_id = app_id
-            self._app_secret = app_secret
-
-        if self._access_token and time.time() < self._token_expires:
-            return self._access_token
+        # If credentials changed, purge stale cache entry
+        if cached and (cached["app_id"] != app_id or cached["app_secret"] != app_secret):
+            del self._token_cache[community_id]
+            cached = None
 
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -98,9 +108,13 @@ class WechatService:
                     errmsg = data.get("errmsg", "未知错误")
                     raise Exception(f"获取access_token失败 [errcode={errcode}]: {errmsg}")
 
-                self._access_token = data["access_token"]
-                self._token_expires = time.time() + data.get("expires_in", 7200) - 300
-                return self._access_token
+                self._token_cache[community_id] = {
+                    "token": data["access_token"],
+                    "expires": time.time() + data.get("expires_in", 7200) - 300,
+                    "app_id": app_id,
+                    "app_secret": app_secret,
+                }
+                return self._token_cache[community_id]["token"]
         except httpx.TimeoutException:
             raise Exception("微信API请求超时，请稍后重试")
         except httpx.HTTPError as e:
@@ -110,12 +124,12 @@ class WechatService:
         """Convert Markdown to WeChat-compatible HTML with inline styles."""
         html = markdown.markdown(
             markdown_text,
-            extensions=["extra", "tables", "nl2br"],
+            extensions=_WECHAT_MD_EXTENSIONS,
         )
         soup = BeautifulSoup(html, "html.parser")
 
         for tag_name, style in WECHAT_STYLES.items():
-            if tag_name == "code_inline" or tag_name == "code_block":
+            if tag_name in _CODE_TAG_NAMES:
                 continue
             for tag in soup.find_all(tag_name):
                 tag["style"] = style

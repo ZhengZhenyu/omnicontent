@@ -46,16 +46,17 @@ jobs:
           echo "✅ PR size is reasonable"
         fi
 
-    - name: Check for Co-authored-by
+    - name: Check for Co-authored-by (should NOT be present)
       run: |
-        # Check last commit message
+        # 项目规范：不允许在提交信息中添加 Co-Authored-By（包括 AI 署名）
         COMMIT_MSG=$(git log -1 --pretty=%B)
 
-        if echo "$COMMIT_MSG" | grep -q "Co-Authored-By: Claude Sonnet"; then
-          echo "✅ Co-authored-by tag found"
-        else
-          echo "⚠️ Missing Co-authored-by tag for AI assistance"
+        if echo "$COMMIT_MSG" | grep -qi "Co-Authored-By"; then
+          echo "❌ 检测到 Co-Authored-By 标记，请从提交信息中移除该行"
+          exit 1
         fi
+
+        echo "✅ 提交信息中无 Co-Authored-By 标记"
 
   files-changed:
     runs-on: ubuntu-latest
@@ -68,7 +69,7 @@ jobs:
 
     - name: Get changed files
       id: changed-files
-      uses: tj-actions/changed-files@v41
+      uses: tj-actions/changed-files@v46
       with:
         files_yaml: |
           backend:

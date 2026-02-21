@@ -317,6 +317,7 @@ Project documentation and commit messages are in Chinese. Code, comments, and va
 - Make atomic commits (one logical change per commit)
 - Run tests before committing
 - Run linting before committing
+- **在执行 `git push` 操作前，必须先询问用户**："是否现在推送到远程，还是等后续改动一并推送？"，得到明确确认后再执行；`git commit` 可由 AI 自行执行，无需询问
 
 ### Pull Request Process
 - Create PR from feature branch to develop
