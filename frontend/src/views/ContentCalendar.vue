@@ -986,19 +986,15 @@ onBeforeUnmount(() => {
       .fc-daygrid-day-number {
         background: var(--blue);
         color: #fff !important;
-        border-radius: 50%;
-        width: 26px;
-        height: 26px;
-        padding: 0 !important;
-        box-sizing: border-box;
-        line-height: 26px;
-        text-align: center;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin: 5px 7px;
+        border-radius: 14px;
+        padding: 2px 8px !important;
+        margin: 5px 6px;
         font-weight: 700;
+        white-space: nowrap;
         box-shadow: 0 2px 8px rgba(0,149,255,0.35);
+        display: inline-block;
+        line-height: 1.6;
+        box-sizing: border-box;
       }
     }
   }

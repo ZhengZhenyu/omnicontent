@@ -970,18 +970,14 @@ function formatTime(dt: string) {
 :deep(.fc-day-today .fc-daygrid-day-number) {
   background: var(--blue) !important;
   color: #fff !important;
-  border-radius: 50% !important;
-  width: 24px !important;
-  height: 24px !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-  line-height: 24px !important;
-  text-align: center !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 4px 6px !important;
+  border-radius: 14px !important;
+  padding: 2px 8px !important;
+  margin: 4px 5px !important;
   font-weight: 700 !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  line-height: 1.6 !important;
+  box-sizing: border-box !important;
   box-shadow: 0 2px 7px rgba(0,149,255,0.32) !important;
 }
 
