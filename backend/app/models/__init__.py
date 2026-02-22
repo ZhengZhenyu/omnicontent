@@ -1,5 +1,7 @@
 from app.models.audit import AuditLog
+from app.models.campaign import Campaign, CampaignActivity, CampaignContact
 from app.models.channel import ChannelConfig
+from app.models.ecosystem import EcosystemContributor, EcosystemProject
 from app.models.committee import Committee, CommitteeMember
 from app.models.community import Community
 from app.models.content import Content
@@ -48,4 +50,9 @@ __all__ = [
     "EventTask",
     "FeedbackItem",
     "IssueLink",
+    "Campaign",
+    "CampaignContact",
+    "CampaignActivity",
+    "EcosystemProject",
+    "EcosystemContributor",
 ]
