@@ -80,7 +80,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Connection, Refresh } from '@element-plus/icons-vue'
-import { listProjects, createProject, type EcosystemProject } from '../api/ecosystem'
+import { listProjects, createProject, type EcosystemProject, type ProjectCreateData } from '../api/ecosystem'
 import { useCommunityStore } from '../stores/community'
 
 const communityStore = useCommunityStore()
@@ -129,7 +129,7 @@ async function handleCreate() {
   }
   creating.value = true
   try {
-    const payload: Record<string, string> = {
+    const payload: ProjectCreateData = {
       name: createForm.value.name,
       platform: createForm.value.platform,
       org_name: createForm.value.org_name,

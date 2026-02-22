@@ -184,7 +184,7 @@ function formatDate(iso: string) {
 async function loadProject() {
   try {
     project.value = await getProject(pid)
-    projectActive.value = project.value.is_active
+    projectActive.value = project.value?.is_active ?? true
   } catch {
     ElMessage.error('项目信息加载失败')
   }

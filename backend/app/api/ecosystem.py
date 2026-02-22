@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_community, get_current_user
 from app.config import settings
+from app.core.dependencies import get_current_community, get_current_user
 from app.database import get_db
 from app.models import User
 from app.models.ecosystem import EcosystemContributor, EcosystemProject
 from app.models.people import PersonProfile
 from app.schemas.ecosystem import (
-    ContributorOut,
     PaginatedContributors,
     ProjectCreate,
     ProjectListOut,

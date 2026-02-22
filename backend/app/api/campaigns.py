@@ -129,7 +129,7 @@ def campaign_funnel(
         .group_by(CampaignContact.status)
         .all()
     )
-    counts = {status: count for status, count in rows}
+    counts = dict(rows)
     total = sum(counts.values())
     return CampaignFunnel(
         pending=counts.get("pending", 0),

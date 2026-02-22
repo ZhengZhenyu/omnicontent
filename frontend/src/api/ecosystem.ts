@@ -1,4 +1,4 @@
-import apiClient from './client'
+import apiClient from './index'
 
 export interface EcosystemProject {
   id: number
