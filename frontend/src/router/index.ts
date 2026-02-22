@@ -165,6 +165,26 @@ const router = createRouter({
       component: () => import('../views/WechatStats.vue'),
       meta: { requiresAuth: true },
     },
+    // Phase 4a 占位路由
+    {
+      path: '/events',
+      name: 'Events',
+      component: () => import('../views/Events.vue'),
+      meta: { requiresAuth: true },
+    },
+    // Phase 4a/4c 占位路由
+    {
+      path: '/people',
+      name: 'People',
+      component: () => import('../views/People.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/campaigns',
+      name: 'Campaigns',
+      component: () => import('../views/Campaigns.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
