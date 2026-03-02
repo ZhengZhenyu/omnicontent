@@ -39,6 +39,7 @@ Thumbs.db
 !.claude/skills/
 *.backup*
 .coverage
+htmlcov/
 
 # Local TODO
 GOVERNANCE_TODO.md

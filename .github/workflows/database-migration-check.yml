@@ -89,8 +89,8 @@ jobs:
         for file in backend/alembic/versions/*.py; do
           filename=$(basename "$file")
 
-          # Should be: {revision}_{description}.py
-          if ! echo "$filename" | grep -qE '^[a-f0-9]+_[a-z0-9_]+\.py$'; then
+          # Should be: {NNN}_{description}.py or {hex_hash}_{description}.py
+          if ! echo "$filename" | grep -qE '^([0-9]{3}|[a-f0-9]{12})_[a-z0-9_]+\.py$'; then
             echo "⚠️ Migration file $filename might not follow naming convention"
           fi
         done
